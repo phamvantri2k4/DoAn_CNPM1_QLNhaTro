@@ -1,0 +1,62 @@
+<div class="page-shell">
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <h2 class="page-title">📢 Quản lý bài đăng</h2>
+            <div class="stats">
+                <span>Có {{ listings.length }} bài đăng</span>
+            </div>
+        </div>
+
+        <div class="toolbar-right">
+            <a routerLink="/host/listings/create" class="btn success">✨ Đăng bài mới</a>
+        </div>
+    </div>
+
+    <div *ngIf="message" class="message">{{ message }}</div>
+
+    <div class="card-grid" *ngIf="listings.length; else emptyState">
+        <div class="listing-card" *ngFor="let listing of listings">
+            <div class="listing-header">
+                <div class="listing-title">
+                    <div class="listing-name">{{ listing.title }}</div>
+                    <div class="listing-sub">Phòng ID: {{ listing.roomId }}</div>
+                </div>
+                <span class="status-pill" [class.hidden]="listing.status === 'HIDDEN'">
+                    {{ listing.status === 'VISIBLE' ? '👁️ Hiển thị' : '🔒 Ẩn' }}
+                </span>
+            </div>
+
+            <div class="listing-description" *ngIf="listing.description">
+                {{ listing.description }}
+            </div>
+
+            <div class="listing-meta-row">
+                <span class="meta-item">📅 Đăng: {{ listing.createdAt | date:'dd/MM/yyyy' }}</span>
+            </div>
+
+            <div class="listing-actions">
+                <button class="action-btn primary" (click)="toggleStatus(listing.id, listing.status || 'VISIBLE')"
+                    title="{{ listing.status === 'VISIBLE' ? 'Ẩn bài đăng' : 'Hiển thị bài đăng' }}">
+                    {{ listing.status === 'VISIBLE' ? '🔒 Ẩn' : '👁️ Hiện' }}
+                </button>
+                <a class="action-btn secondary" [routerLink]="['/host/listings', listing.id, 'edit']">
+                    ✏️ Sửa
+                </a>
+                <button class="action-btn danger" (click)="deletePost(listing.id)">
+                    🗑️ Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #emptyState>
+        <div class="empty">
+            <div class="empty-icon">📢</div>
+            <div class="empty-title">Chưa có bài đăng nào</div>
+            <div class="empty-sub">Hãy tạo bài đăng để quảng cáo phòng trọ của bạn</div>
+            <a routerLink="/host/listings/create" class="btn success" style="margin-top: 20px;">
+                ✨ Đăng bài ngay
+            </a>
+        </div>
+    </ng-template>
+</div>

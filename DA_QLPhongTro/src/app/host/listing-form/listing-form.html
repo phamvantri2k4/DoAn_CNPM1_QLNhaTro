@@ -1,0 +1,97 @@
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2 class="form-title">{{ isEdit ? '✏️ Cập nhật bài đăng' : '📢 Đăng bài cho thuê' }}</h2>
+            <p class="form-subtitle">{{ isEdit ? 'Chỉnh sửa thông tin bài đăng' : 'Tạo bài đăng mới để quảng cáo phòng trọ của bạn' }}</p>
+        </div>
+
+        <form (ngSubmit)="submit()" class="form-body">
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="label-text">🏢 Chọn trọ</span>
+                    <span class="label-required">*</span>
+                </label>
+                <div style="display:flex; gap: 10px; align-items: center;">
+                    <select [(ngModel)]="selectedHostelId" name="hostelId" required class="form-select" (change)="onHostelChange()" style="flex: 1;">
+                        <option [ngValue]="null">-- Chọn trọ --</option>
+                        <option *ngFor="let h of hostels" [ngValue]="(h.id ?? h.hostelId)">{{ h.name }}</option>
+                    </select>
+                    <button type="button" class="btn btn-secondary" (click)="reloadHostels()">Tải lại</button>
+                </div>
+                <p class="form-hint">Chọn trọ của bạn để lọc danh sách phòng</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="label-text">🏠 Chọn phòng</span>
+                    <span class="label-required">*</span>
+                </label>
+                <select [(ngModel)]="form.roomId" name="roomId" required class="form-select">
+                    <option [ngValue]="null">-- Chọn phòng để đăng bài --</option>
+                    <option *ngFor="let room of rooms" [ngValue]="(room.id ?? room.roomId)">
+                        {{ room.title }}
+                    </option>
+                </select>
+                <p class="form-hint">Chọn phòng mà bạn muốn đăng bài cho thuê</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="label-text">📝 Tiêu đề bài đăng</span>
+                    <span class="label-required">*</span>
+                </label>
+                <input [(ngModel)]="form.title" name="title" required class="form-input"
+                    placeholder="VD: Cho thuê phòng trọ giá rẻ gần trường ĐH" />
+                <p class="form-hint">Tiêu đề hấp dẫn sẽ thu hút nhiều người thuê hơn</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="label-text">📄 Mô tả chi tiết</span>
+                </label>
+                <textarea [(ngModel)]="form.description" name="description" rows="6" class="form-textarea"
+                    placeholder="Mô tả chi tiết về phòng trọ: diện tích, tiện nghi, vị trí, giá cả..."></textarea>
+                <p class="form-hint">Mô tả càng chi tiết càng tốt để người thuê hiểu rõ về phòng</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="label-text">🖼️ Ảnh bài đăng</span>
+                </label>
+                <input type="file" accept="image/*" multiple (change)="onFilesSelected($event)" class="form-input" />
+                <p class="form-hint">Chọn 1 hoặc nhiều ảnh (ảnh sẽ gắn vào phòng để hiển thị trên trang chủ)</p>
+
+                <div class="image-grid" *ngIf="images.length">
+                    <div class="image-item" *ngFor="let img of images; let i = index">
+                        <img [src]="getPreviewUrl(img)" alt="preview" class="preview" />
+                        <button type="button" class="remove" (click)="removeImage(i)">✕</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="label-text">👁️ Trạng thái</span>
+                    </label>
+                    <select [(ngModel)]="form.status" name="status" class="form-select">
+                        <option value="VISIBLE">Hiển thị</option>
+                        <option value="HIDDEN">Ẩn</option>
+                    </select>
+                    <p class="form-hint">Chọn "Hiển thị" để người khác có thể thấy</p>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+                    <span *ngIf="!isLoading">{{ isEdit ? '💾 Lưu thay đổi' : '✨ Đăng bài' }}</span>
+                    <span *ngIf="isLoading">⏳ Đang xử lý...</span>
+                </button>
+                <a routerLink="/host/listings" class="btn btn-secondary">❌ Hủy</a>
+            </div>
+        </form>
+
+        <div class="message success" *ngIf="message && !message.includes('thất bại')">{{ message }}</div>
+        <div class="message error" *ngIf="message && message.includes('thất bại')">{{ message }}</div>
+    </div>
+</div>

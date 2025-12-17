@@ -1,0 +1,90 @@
+<div class="form-container">
+  <div class="form-card">
+    <div class="form-header">
+      <h2 class="form-title">{{ isEdit ? '✏️ Cập nhật trọ' : '🏠 Thêm trọ mới' }}</h2>
+      <p class="form-subtitle">{{ isEdit ? 'Chỉnh sửa thông tin nhà trọ của bạn' : 'Tạo nhà trọ mới để quản lý phòng cho thuê' }}</p>
+    </div>
+
+    <form (ngSubmit)="submit()" class="form-body">
+      <div class="form-group">
+        <label class="form-label">
+          <span class="label-text">📝 Tên trọ</span>
+          <span class="label-required">*</span>
+        </label>
+        <input 
+          [(ngModel)]="form.name" 
+          name="name" 
+          required 
+          class="form-input"
+          placeholder="VD: Nhà trọ Sinh Viên A"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          <span class="label-text">📍 Địa chỉ</span>
+        </label>
+        <input 
+          [(ngModel)]="form.address" 
+          name="address" 
+          class="form-input"
+          placeholder="VD: 123 Đường ABC"
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">🗺️ Tỉnh/Thành phố</span>
+          </label>
+          <select class="form-input" [(ngModel)]="form.province" name="province" (ngModelChange)="onProvinceSelectChange($event)">
+            <option [ngValue]="''">-- Chọn tỉnh/thành --</option>
+            <option *ngFor="let p of provinceOptions" [ngValue]="p">{{ p }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">🏙️ Quận/Huyện</span>
+          </label>
+          <select class="form-input" [(ngModel)]="form.district" name="district" (ngModelChange)="onDistrictSelectChange($event)" [disabled]="!form.province">
+            <option [ngValue]="''">-- Chọn quận/huyện --</option>
+            <option *ngFor="let d of districtOptions" [ngValue]="d">{{ d }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">🏘️ Phường/Xã</span>
+          </label>
+          <select class="form-input" [(ngModel)]="form.ward" name="ward" (ngModelChange)="onWardSelectChange($event)" [disabled]="!form.district">
+            <option [ngValue]="''">-- Chọn phường/xã --</option>
+            <option *ngFor="let w of wardOptions" [ngValue]="w">{{ w }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          <span class="label-text">📄 Mô tả</span>
+        </label>
+        <textarea 
+          [(ngModel)]="form.description" 
+          name="description" 
+          rows="4" 
+          class="form-textarea"
+          placeholder="Mô tả về nhà trọ của bạn..."
+        ></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          {{ isEdit ? '💾 Lưu thay đổi' : '✨ Tạo trọ' }}
+        </button>
+        <a routerLink="/host/hostels" class="btn btn-secondary">❌ Hủy</a>
+      </div>
+    </form>
+
+    <p class="message" *ngIf="message">{{ message }}</p>
+  </div>
+</div>

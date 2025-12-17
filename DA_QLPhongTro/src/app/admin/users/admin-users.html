@@ -1,0 +1,64 @@
+<div *ngIf="message" class="message">{{ message }}</div>
+
+<div class="edit-panel" *ngIf="editingUserId">
+  <div class="edit-title">Sửa người dùng #{{ editingUserId }}</div>
+  <div class="edit-grid">
+    <label class="field">
+      <span class="label">Họ tên</span>
+      <input class="control" [(ngModel)]="editForm.fullName" />
+    </label>
+    <label class="field">
+      <span class="label">Email</span>
+      <input class="control" [(ngModel)]="editForm.email" />
+    </label>
+    <label class="field">
+      <span class="label">Điện thoại</span>
+      <input class="control" [(ngModel)]="editForm.phone" />
+    </label>
+    <label class="field">
+      <span class="label">Địa chỉ</span>
+      <input class="control" [(ngModel)]="editForm.address" />
+    </label>
+    <label class="field">
+      <span class="label">Vai trò</span>
+      <select class="control" [(ngModel)]="editForm.role">
+        <option value="admin">admin</option>
+        <option value="owner">owner</option>
+        <option value="renter">renter</option>
+      </select>
+    </label>
+  </div>
+  <div class="edit-actions">
+    <button type="button" class="btn secondary" (click)="cancelEdit()">Hủy</button>
+    <button type="button" class="btn primary" (click)="saveEdit()">Lưu</button>
+  </div>
+</div>
+
+<table *ngIf="users.length" class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Họ tên</th>
+      <th>Email</th>
+      <th>Điện thoại</th>
+      <th>Vai trò</th>
+      <th>Trạng thái</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let u of users">
+      <td>{{ u.id || u.userId }}</td>
+      <td>{{ u.fullName }}</td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.phone }}</td>
+      <td>{{ u.role || u.account?.role }}</td>
+      <td>{{ u.account?.status || u.status }}</td>
+      <td>
+        <button type="button" (click)="startEdit(u)">Sửa</button>
+        <button type="button" (click)="toggle(u)">Khoá/Mở</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+

@@ -1,0 +1,39 @@
+<div class="auth-card">
+  <h2>Đăng ký</h2>
+  <p class="sub">Tạo tài khoản cho người thuê hoặc chủ trọ.</p>
+
+  <form (ngSubmit)="submit()">
+    <label>Họ tên
+      <input [(ngModel)]="form.fullName" name="fullName" required />
+    </label>
+
+    <label>Email
+      <input [(ngModel)]="form.email" name="email" type="email" required />
+    </label>
+
+    <label>Số điện thoại
+      <input [(ngModel)]="form.phone" name="phone" required />
+    </label>
+
+    <label>Mật khẩu
+      <input [(ngModel)]="form.password" name="password" type="password" required />
+    </label>
+
+    <label>Vai trò
+      <select [(ngModel)]="form.role" name="role">
+        <option value="renter">Người thuê</option>
+        <option value="owner">Chủ trọ</option>
+      </select>
+    </label>
+
+    <button type="submit" [disabled]="loading">Đăng ký</button>
+  </form>
+
+  <p class="message" [class.error]="message && !message.startsWith('Đăng')">{{ message }}</p>
+
+  <p class="hint">
+    Đã có tài khoản?
+    <a routerLink="/auth/login">Đăng nhập</a>
+  </p>
+</div>
+

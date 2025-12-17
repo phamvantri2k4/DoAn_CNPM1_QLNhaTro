@@ -1,0 +1,57 @@
+<div class="page-shell">
+  <div class="header-row">
+    <div>
+      <h2 class="page-title">Quản lý bài viết</h2>
+      <p class="page-sub">Chọn người dùng để xem và quản lý các bài viết của họ.</p>
+    </div>
+    <div class="header-actions">
+      <a class="btn ghost" routerLink="/admin/dashboard">Tổng quan</a>
+      <a class="btn ghost" routerLink="/admin/users">Người dùng</a>
+      <button type="button" class="btn primary" (click)="fetchUsers()">Tải lại</button>
+    </div>
+  </div>
+
+  <div *ngIf="message" class="status error">{{ message }}</div>
+
+  <div class="panel">
+    <label class="field">
+      <span class="field-label">Chọn chủ trọ</span>
+      <select class="field-control" [(ngModel)]="selectedUserId" (ngModelChange)="onSelectUser()">
+        <option [ngValue]="null">-- Chọn người dùng --</option>
+        <option *ngFor="let u of ownerUsers" [ngValue]="u.id || u.userId">
+          {{ u.fullName }} ({{ u.email }})
+        </option>
+      </select>
+    </label>
+
+    <div class="hint" *ngIf="loadingUsers">Đang tải danh sách người dùng...</div>
+  </div>
+
+  <div class="loading" *ngIf="loadingListings">Đang tải danh sách bài viết...</div>
+
+  <div class="grid" *ngIf="!loadingListings && listings.length">
+    <article class="card" *ngFor="let p of listings">
+      <div class="thumb">
+        <img *ngIf="getFirstImage(p); else noImg" [src]="getFirstImage(p)!" alt="Ảnh" />
+        <ng-template #noImg>
+          <div class="thumb-empty">Không có ảnh</div>
+        </ng-template>
+      </div>
+
+      <div class="body">
+        <div class="title">{{ p.title }}</div>
+        <div class="sub" *ngIf="p.address">{{ p.address }}</div>
+        <div class="sub" *ngIf="p.price">Giá: {{ p.price | number:'1.0-0' }} đ/tháng</div>
+
+        <div class="actions">
+          <a class="btn ghost" [routerLink]="['/listings', p.id]">Xem</a>
+          <button type="button" class="btn danger" (click)="deleteListing(p)">Xóa</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="empty" *ngIf="!loadingListings && selectedUserId && !listings.length">
+    Không có bài viết.
+  </div>
+</div>

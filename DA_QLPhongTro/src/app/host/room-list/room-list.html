@@ -1,0 +1,73 @@
+<div class="page-shell">
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="filters">
+        <span></span>
+      </div>
+      <div class="stats" *ngIf="!loading">
+        <span>Có phòng {{ rooms.length }}</span>
+        <span *ngIf="currentHostelId"> | Trong trọ #{{ currentHostelId }}</span>
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <a routerLink="/host/hostels" class="btn secondary">Quay về trọ</a>
+      <a
+        routerLink="/host/rooms/create"
+        class="btn success"
+        [queryParams]="currentHostelId ? { hostelId: currentHostelId } : null"
+        >Thêm phòng</a
+      >
+    </div>
+  </div>
+
+  <div *ngIf="message" class="message">{{ message }}</div>
+  <div *ngIf="loading" class="loading">Đang tải danh sách phòng...</div>
+
+  <div class="card-grid" *ngIf="!loading && rooms.length; else emptyRooms">
+    <div class="room-card" *ngFor="let r of rooms">
+      <div class="room-header">
+        <div class="room-title">
+          <div class="room-name">{{ r.title }}</div>
+          <div class="room-sub">Diện tích: {{ r.area }} m²</div>
+        </div>
+        <span class="status-pill">{{ r.status || 'Đang trống' }}</span>
+      </div>
+
+      <div class="room-meta-row">
+        <span class="meta-item">Giá: <b>{{ r.price | number: '1.0-0' }} đ / tháng</b></span>
+      </div>
+
+      <div class="current-renter" *ngIf="(r.status || '') === 'Đang thuê' && getCurrentRenter(r)">
+        <div class="cr-title">Người thuê hiện tại</div>
+        <div class="cr-line"><b>Họ tên:</b> {{ getCurrentRenter(r)?.renterFullName }}</div>
+        <div class="cr-line"><b>SĐT:</b> {{ getCurrentRenter(r)?.renterPhone }}</div>
+        <div class="cr-line"><b>Email:</b> {{ getCurrentRenter(r)?.renterEmail }}</div>
+        <div class="cr-line"><b>Từ ngày:</b> {{ getCurrentRenter(r)?.startDate | date:'shortDate' }}</div>
+      </div>
+
+      <div class="room-actions">
+        <a
+          class="action-btn info"
+          [routerLink]="['/rooms', r.id || r.roomId]"
+          >Chi tiết</a
+        >
+        <a
+          class="action-btn secondary"
+          [routerLink]="['/host/rooms', r.id || r.roomId, 'edit']"
+          >Sửa</a
+        >
+        <button class="action-btn danger" type="button" (click)="delete(r)">
+          Xóa
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyRooms>
+    <div class="empty" *ngIf="!loading">
+      <div class="empty-title">Chưa có phòng nào trong trọ này</div>
+      <div class="empty-sub">Bấm "Thêm phòng" để tạo phòng đầu tiên.</div>
+    </div>
+  </ng-template>
+</div>

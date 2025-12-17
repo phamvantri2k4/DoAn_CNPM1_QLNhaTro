@@ -1,0 +1,26 @@
+<ng-container *ngIf="state$ | async as s">
+  <div class="overlay" *ngIf="s.open" (click)="s.kind==='loading' ? null : close()"></div>
+  <section class="dialog" *ngIf="s.open" role="dialog" aria-modal="true">
+    <div class="head" [class.success]="s.kind==='success'" [class.error]="s.kind==='error'" [class.info]="s.kind==='info'" [class.confirm]="s.kind==='confirm'" [class.loading]="s.kind==='loading'">
+      <div class="title">{{ s.title }}</div>
+      <button *ngIf="s.kind!=='loading'" type="button" class="x" (click)="close()">×</button>
+    </div>
+
+    <div class="body">
+      <div class="status" *ngIf="s.kind==='loading'">
+        <div class="spinner"></div>
+      </div>
+      <div class="status" *ngIf="s.kind==='success'">
+        <div class="check">✓</div>
+      </div>
+      <div class="message">{{ s.message }}</div>
+    </div>
+
+    <div class="actions" *ngIf="s.kind!=='loading'">
+      <button *ngIf="s.kind==='confirm'" type="button" class="btn" (click)="cancel()">{{ s.cancelText || 'Hủy' }}</button>
+      <button *ngIf="s.kind==='confirm'" type="button" class="btn primary" (click)="confirm()">{{ s.confirmText || 'Đồng ý' }}</button>
+
+      <button *ngIf="s.kind!=='confirm'" type="button" class="btn primary" (click)="close()">Đóng</button>
+    </div>
+  </section>
+</ng-container>

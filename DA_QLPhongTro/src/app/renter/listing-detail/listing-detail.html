@@ -1,0 +1,146 @@
+<section class="page" *ngIf="!loading">
+  <div *ngIf="message" class="message">{{ message }}</div>
+
+  <div *ngIf="listing" class="card">
+    <h2 class="title">{{ listing.title }}</h2>
+    <p class="desc">{{ listing.description || 'Chưa có mô tả' }}</p>
+
+    <div class="gallery" *ngIf="images.length">
+      <button type="button" class="gallery-item" *ngFor="let img of images; let i = index" (click)="openLightbox(i)">
+        <img [src]="img" alt="image" loading="lazy" decoding="async" (error)="$any($event.target).style.display='none'" />
+      </button>
+    </div>
+
+    <div class="lightbox" *ngIf="lightboxOpen" (click)="closeLightbox()">
+      <div class="lightbox-content" (click)="$event.stopPropagation()">
+        <button type="button" class="lightbox-close" (click)="closeLightbox()">✕</button>
+
+        <button type="button" class="lightbox-nav prev" (click)="prevLightbox()" [disabled]="images.length <= 1">‹</button>
+        <img class="lightbox-img" [src]="lightboxImage" alt="image" />
+        <button type="button" class="lightbox-nav next" (click)="nextLightbox()" [disabled]="images.length <= 1">›</button>
+
+        <div class="lightbox-count">{{ (lightboxIndex + 1) }} / {{ images.length }}</div>
+      </div>
+    </div>
+
+    <div class="room" *ngIf="room">
+      <div class="row"><b>Phòng:</b> {{ room.title }}</div>
+      <div class="row"><b>Giá:</b> {{ room.price | number:'1.0-0' }} đ</div>
+      <div class="row"><b>Tiện ích:</b> {{ room.utilitiesDescription || 'Chưa cập nhật' }}</div>
+    </div>
+
+    <div class="owner" *ngIf="listing">
+      <div class="owner-head">
+        <h3 class="owner-title">Liên hệ chủ trọ</h3>
+        <p class="owner-sub">Thông tin liên hệ để bạn trao đổi trước khi thuê.</p>
+      </div>
+      <div class="owner-grid">
+        <div class="owner-item">
+          <div class="k">Tên</div>
+          <div class="v">{{ listing.ownerFullName || '(Chưa cập nhật)' }}</div>
+        </div>
+        <div class="owner-item">
+          <div class="k">SĐT</div>
+          <div class="v">{{ listing.ownerPhone || '(Chưa cập nhật)' }}</div>
+        </div>
+        <div class="owner-item">
+          <div class="k">Email</div>
+          <div class="v">{{ listing.ownerEmail || '(Chưa cập nhật)' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reviews" *ngIf="room">
+      <div class="reviews-head">
+        <h3 class="reviews-title">Đánh giá</h3>
+        <div class="reviews-summary" *ngIf="reviews.length">
+          <span class="stars">
+            <span class="star filled" *ngFor="let _ of getStars(averageRating)">★</span>
+            <span class="star" *ngFor="let _ of getEmptyStars(averageRating)">★</span>
+          </span>
+          <span class="avg">{{ averageRatingText }}/5</span>
+          <span class="count">({{ reviews.length }} đánh giá)</span>
+        </div>
+      </div>
+
+      <div class="reviews-loading" *ngIf="reviewLoading">Đang tải đánh giá...</div>
+
+      <div class="reviews-empty" *ngIf="!reviewLoading && !reviews.length">
+        Chưa có đánh giá cho phòng này.
+      </div>
+
+      <div class="reviews-list" *ngIf="!reviewLoading && reviews.length">
+        <article class="review" *ngFor="let r of reviews">
+          <div class="review-row">
+            <span class="stars">
+              <span class="star filled" *ngFor="let _ of getStars(r.rating)">★</span>
+              <span class="star" *ngFor="let _ of getEmptyStars(r.rating)">★</span>
+            </span>
+            <span class="date">{{ r.createdAt | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="reviewer">{{ r.renterFullName || '(Chưa cập nhật tên)' }}</div>
+          <div class="comment">{{ r.comment || 'Không có bình luận' }}</div>
+        </article>
+      </div>
+    </div>
+
+    <div class="actions" *ngIf="loggedIn && canSendRequest">
+      <div class="actions-head">
+        <h3 class="actions-title">Gửi yêu cầu</h3>
+        <p class="actions-sub">Thông tin sẽ được gửi đến chủ trọ để xử lý.</p>
+      </div>
+
+      <div class="actions-foot" *ngIf="!showRequestForm">
+        <button type="button" class="btn primary" (click)="openRequestForm()">Gửi yêu cầu thuê</button>
+      </div>
+
+      <div class="request-form" *ngIf="showRequestForm">
+        <div class="form-grid">
+          <div class="field">
+            <span class="field-label">Loại yêu cầu</span>
+            <div class="field-control">Thuê phòng</div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Liên hệ</span>
+            <div class="field-control contact">
+              <div class="contact-line"><b>{{ currentUser?.fullName || '(Chưa có tên)' }}</b></div>
+              <div class="contact-line" *ngIf="currentUser?.phone">SĐT: {{ currentUser?.phone }}</div>
+              <div class="contact-line" *ngIf="currentUser?.email">Email: {{ currentUser?.email }}</div>
+            </div>
+          </div>
+
+          <label class="field field-full">
+            <span class="field-label">Ghi chú</span>
+            <textarea class="field-control" [(ngModel)]="request.note" rows="3"
+              placeholder="Ví dụ: thời gian muốn dọn vào, số người ở, nhu cầu xem phòng..."></textarea>
+          </label>
+        </div>
+
+        <div class="actions-foot form-actions">
+          <button type="button" class="btn secondary" [disabled]="sendingRequest" (click)="closeRequestForm()">Hủy</button>
+          <button type="button" class="btn primary" [disabled]="sendingRequest" (click)="sendRequest()">
+            {{ sendingRequest ? 'Đang gửi...' : 'Gửi yêu cầu' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions" *ngIf="loggedIn && !canSendRequest">
+      <div class="actions-head">
+        <h3 class="actions-title">Gửi yêu cầu</h3>
+        <p class="actions-sub">Chỉ tài khoản người thuê (renter) mới gửi được yêu cầu thuê.</p>
+      </div>
+    </div>
+
+    <div class="actions" *ngIf="!loggedIn">
+      <a routerLink="/auth/login">Đăng nhập để gửi yêu cầu thuê</a>
+    </div>
+
+    <div class="footer">
+      <a routerLink="/home">Quay lại trang chủ</a>
+    </div>
+  </div>
+</section>
+
+<div *ngIf="loading" class="loading">Đang tải...</div>

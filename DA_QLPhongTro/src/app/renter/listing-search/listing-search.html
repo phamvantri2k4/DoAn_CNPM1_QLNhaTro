@@ -1,0 +1,129 @@
+<div class="page-shell">
+  <section class="hero">
+    <div class="hero-text">
+      <h1 class="hero-title">Danh sách bài đăng</h1>
+      <p class="hero-sub" *ngIf="!error">
+        Tìm thấy <strong>{{ filteredListings.length }}</strong> bài đăng
+      </p>
+    </div>
+
+    <div class="hero-search">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" [(ngModel)]="searchTerm" placeholder="Tìm theo địa điểm, tên phòng..." />
+        <button type="button" class="btn ghost" (click)="toggleFilters()">Bộ lọc</button>
+        <button type="button" class="btn primary" (click)="fetch()">Tải lại</button>
+      </div>
+
+      <div class="filter-panel" *ngIf="showFilters">
+        <div class="filter-row">
+          <div class="filter-left">
+            <div class="location-filters">
+              <div class="loc-field">
+                <div class="loc-label">Tỉnh thành</div>
+                <select class="select" [(ngModel)]="selectedProvince" (ngModelChange)="onProvinceChange()">
+                  <option value="">Toàn quốc</option>
+                  <option *ngFor="let p of provinceOptions" [value]="p">{{ p }}</option>
+                </select>
+              </div>
+
+              <div class="loc-field">
+                <div class="loc-label">Quận huyện</div>
+                <select class="select" [(ngModel)]="selectedDistrict" (ngModelChange)="onDistrictChange()" [disabled]="!selectedProvince">
+                  <option value="">Tất cả</option>
+                  <option *ngFor="let d of districtOptions" [value]="d">{{ d }}</option>
+                </select>
+              </div>
+
+              <div class="loc-field">
+                <div class="loc-label">Phường xã</div>
+                <select class="select" [(ngModel)]="selectedWard" [disabled]="!selectedDistrict">
+                  <option value="">Tất cả</option>
+                  <option *ngFor="let w of wardOptions" [value]="w">{{ w }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="range-section">
+              <div class="range-title">Khoảng giá</div>
+              <div class="chips">
+                <button
+                  type="button"
+                  class="chip"
+                  *ngFor="let r of priceRanges"
+                  [class.active]="selectedPriceRange === r.key"
+                  (click)="selectPriceRange(r.key)"
+                >
+                  {{ r.label }}
+                </button>
+              </div>
+            </div>
+
+            <div class="range-section">
+              <div class="range-title">Khoảng diện tích</div>
+              <div class="chips">
+                <button
+                  type="button"
+                  class="chip"
+                  *ngFor="let r of areaRanges"
+                  [class.active]="selectedAreaRange === r.key"
+                  (click)="selectAreaRange(r.key)"
+                >
+                  {{ r.label }}
+                </button>
+              </div>
+            </div>
+
+            <button type="button" class="btn ghost" (click)="clearFilters()">Xóa lọc</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <section class="results" *ngIf="filteredListings.length; else emptyState">
+    <div class="grid">
+      <article class="room-card" *ngFor="let p of filteredListings">
+        <div class="thumb">
+          <img *ngIf="getFirstImage(p); else noImage" [src]="getFirstImage(p)!" alt="Ảnh phòng" loading="lazy" decoding="async" />
+          <ng-template #noImage>
+            <div class="thumb-placeholder">Không có ảnh</div>
+          </ng-template>
+
+          <div class="badge-new" *ngIf="p.isNew">Mới</div>
+          <button type="button" class="fav-btn" title="Yêu thích">♥</button>
+          <div class="price-chip" *ngIf="p.price">
+            {{ p.price | number:'1.0-0' }}₫/tháng
+          </div>
+        </div>
+
+        <div class="room-body">
+          <h3 class="room-title">{{ p.title }}</h3>
+          <p class="room-address" *ngIf="p.address">{{ p.address }}</p>
+          <p class="room-desc">{{ p.description || 'Chưa có mô tả chi tiết.' }}</p>
+
+          <div class="room-meta">
+            <span class="meta-item" *ngIf="p.area">{{ p.area }}m²</span>
+            <span class="meta-item" *ngIf="p.createdAt">{{ p.createdAt | date:'dd/MM/yyyy' }}</span>
+          </div>
+
+          <div class="room-footer">
+            <div class="rating" *ngIf="p.rating">
+              ★ {{ p.rating | number:'1.1-1' }}
+              <span class="rating-count" *ngIf="p.ratingCount">({{ p.ratingCount }})</span>
+            </div>
+            <a [routerLink]="['/listings', p.id]" class="btn link">Xem chi tiết</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <ng-template #emptyState>
+    <div class="empty" *ngIf="!error">
+      <div class="empty-title">Không có bài đăng.</div>
+    </div>
+  </ng-template>
+</div>

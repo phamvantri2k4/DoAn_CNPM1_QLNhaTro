@@ -1,0 +1,26 @@
+<div class="auth-card">
+  <h2>Đăng nhập</h2>
+  <p class="sub">Sử dụng email hoặc tên đăng nhập.</p>
+
+  <form (ngSubmit)="submit()">
+    <label>
+      Tên đăng nhập / Email
+      <input [(ngModel)]="form.usernameOrEmail" name="usernameOrEmail" required autocomplete="username" />
+    </label>
+
+    <label>
+      Mật khẩu
+      <input [(ngModel)]="form.password" name="password" type="password" required autocomplete="current-password" />
+    </label>
+
+    <button type="submit" [disabled]="loading">Đăng nhập</button>
+  </form>
+
+  <p class="message" [class.error]="message && !message.startsWith('Đăng')">{{ message }}</p>
+
+  <p class="hint">
+    Chưa có tài khoản?
+    <a routerLink="/auth/register">Đăng ký</a>
+  </p>
+</div>
+

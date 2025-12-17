@@ -1,0 +1,53 @@
+<div class="page-shell">
+  <div class="card">
+    <div class="head">
+      <div>
+        <h2 class="title">Hồ sơ cá nhân</h2>
+        <p class="sub">Cập nhật thông tin liên hệ và ảnh đại diện.</p>
+      </div>
+    </div>
+
+    <form *ngIf="form" class="form" (ngSubmit)="save()">
+      <div class="avatar-row">
+        <div class="avatar">
+          <img *ngIf="getAvatarSrc()" [src]="getAvatarSrc()" alt="Avatar" (error)="$any($event.target).style.display='none'" />
+          <div *ngIf="!form.avatarUrl" class="avatar-placeholder">Ảnh</div>
+        </div>
+        <div class="avatar-fields">
+          <label class="field">
+            <span class="field-label">Ảnh đại diện</span>
+            <input class="field-control" type="file" accept="image/*" (change)="onAvatarSelected($event)" />
+          </label>
+        </div>
+      </div>
+
+      <div class="grid">
+        <label class="field">
+          <span class="field-label">Họ tên</span>
+          <input class="field-control" [(ngModel)]="form.fullName" name="fullName" required />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Email</span>
+          <input class="field-control" [(ngModel)]="form.email" name="email" disabled />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Số điện thoại</span>
+          <input class="field-control" [(ngModel)]="form.phone" name="phone" />
+        </label>
+
+        <label class="field field-full">
+          <span class="field-label">Địa chỉ</span>
+          <input class="field-control" [(ngModel)]="form.address" name="address" />
+        </label>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn primary">Lưu thay đổi</button>
+      </div>
+    </form>
+
+    <p class="message" *ngIf="message">{{ message }}</p>
+  </div>
+</div>

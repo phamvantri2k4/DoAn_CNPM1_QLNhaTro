@@ -1,0 +1,82 @@
+<section class="page">
+  <div class="head">
+    <div>
+      <h2 class="title">Yêu cầu thuê / trả phòng</h2>
+      <p class="sub">Quản lý các yêu cầu từ người thuê. Chấp nhận sẽ tự động cập nhật trạng thái phòng/bài đăng.</p>
+    </div>
+    <button type="button" class="btn" (click)="fetch()">Tải lại</button>
+  </div>
+
+  <div *ngIf="message" class="message">{{ message }}</div>
+
+  <div class="tabs">
+    <button type="button" class="tab" [class.active]="activeTab==='PENDING_RENT'" (click)="setTab('PENDING_RENT')">
+      Chờ duyệt thuê
+      <span class="tab-badge" *ngIf="pendingRentCount > 0">{{ pendingRentCount }}</span>
+    </button>
+    <button type="button" class="tab" [class.active]="activeTab==='PENDING_RETURN'" (click)="setTab('PENDING_RETURN')">
+      Chờ duyệt trả
+      <span class="tab-badge" *ngIf="pendingReturnCount > 0">{{ pendingReturnCount }}</span>
+    </button>
+    <button type="button" class="tab" [class.active]="activeTab==='PROCESSED'" (click)="setTab('PROCESSED')">
+      Đã xử lý
+    </button>
+  </div>
+
+  <div class="list" *ngIf="activeTab==='PENDING_RENT' && pendingRentRequests.length">
+    <article class="card" *ngFor="let r of pendingRentRequests">
+      <div class="row">
+        <div class="left">
+          <div class="k">Phòng</div>
+          <div class="v">{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</div>
+        </div>
+        <div class="right">
+          <span class="chip">Chờ duyệt</span>
+        </div>
+      </div>
+      <div class="meta">{{ r.sentAt || r.sentDate | date:'short' }}</div>
+      <div class="note">{{ r.note }}</div>
+      <div class="actions" *ngIf="isPending(r)">
+        <button type="button" class="btn primary" (click)="updateStatus(r, 'ACCEPTED')">Chấp nhận</button>
+        <button type="button" class="btn danger" (click)="updateStatus(r, 'REJECTED')">Từ chối</button>
+      </div>
+    </article>
+  </div>
+
+  <div class="list" *ngIf="activeTab==='PENDING_RETURN' && pendingReturnRequests.length">
+    <article class="card" *ngFor="let r of pendingReturnRequests">
+      <div class="row">
+        <div class="left">
+          <div class="k">Phòng</div>
+          <div class="v">{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</div>
+        </div>
+        <div class="right">
+          <span class="chip">Chờ duyệt</span>
+        </div>
+      </div>
+      <div class="meta">{{ r.sentAt || r.sentDate | date:'short' }}</div>
+      <div class="note">{{ r.note }}</div>
+      <div class="actions" *ngIf="isPending(r)">
+        <button type="button" class="btn primary" (click)="updateStatus(r, 'ACCEPTED')">Chấp nhận</button>
+        <button type="button" class="btn danger" (click)="updateStatus(r, 'REJECTED')">Từ chối</button>
+      </div>
+    </article>
+  </div>
+
+  <div class="list" *ngIf="activeTab==='PROCESSED' && processedRequests.length">
+    <article class="card" *ngFor="let r of processedRequests">
+      <div class="row">
+        <div class="left">
+          <div class="k">Phòng</div>
+          <div class="v">{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</div>
+        </div>
+        <div class="right">
+          <span class="chip" [class.done]="isAcceptedStatus(r.status)" [class.danger]="isRejectedStatus(r.status)">{{ getStatusLabel(r.status) }}</span>
+        </div>
+      </div>
+      <div class="meta">{{ r.sentAt || r.sentDate | date:'short' }}</div>
+      <div class="note">{{ r.note }}</div>
+    </article>
+  </div>
+</section>
+

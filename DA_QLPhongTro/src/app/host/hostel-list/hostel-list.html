@@ -1,0 +1,52 @@
+<div class="page-shell">
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="stats" *ngIf="!isLoading">
+        <span>Có trọ {{ hostels.length }}</span>
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <a routerLink="/host/hostels/create" class="btn success">Thêm trọ</a>
+    </div>
+  </div>
+
+  <div *ngIf="message" class="message">{{ message }}</div>
+  <div *ngIf="isLoading" class="loading">Đang tải danh sách trọ...</div>
+
+  <div class="card-grid" *ngIf="!isLoading && hostels.length; else emptyState">
+    <div class="hostel-card" *ngFor="let h of hostels">
+      <div class="hostel-header">
+        <div class="hostel-title">
+          <div class="hostel-name">{{ h.name }}</div>
+          <div class="hostel-sub">{{ h.address }}</div>
+        </div>
+        <span class="status-pill">{{ h.status || 'Hoạt động' }}</span>
+      </div>
+
+      <div class="hostel-meta-row">
+        <span class="meta-item">Số phòng: <b>{{ h.roomCount || 0 }}</b></span>
+      </div>
+
+      <div class="hostel-actions">
+        <a
+          class="action-btn info"
+          [routerLink]="['/host/rooms']"
+          [queryParams]="{ hostelId: (h.id ?? h.hostelId) }"
+          >Xem phòng</a
+        >
+        <a
+          class="action-btn secondary"
+          [routerLink]="['/host/hostels', (h.id ?? h.hostelId), 'edit']"
+          >Sửa trọ</a
+        >
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="empty" *ngIf="!isLoading">
+      <div class="empty-title">Không có trọ</div>
+    </div>
+  </ng-template>
+</div>

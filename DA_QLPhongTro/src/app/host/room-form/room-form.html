@@ -1,0 +1,67 @@
+<div class="form-container">
+  <div class="form-card">
+    <div class="form-header">
+      <h2 class="form-title">{{ isEdit ? '✏️ Cập nhật phòng' : '🏠 Thêm phòng mới' }}</h2>
+      <p class="form-subtitle">{{ isEdit ? 'Chỉnh sửa thông tin phòng trọ' : 'Tạo phòng mới để cho thuê' }}</p>
+    </div>
+
+    <form (ngSubmit)="submit()" class="form-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">📝 Tiêu đề</span>
+            <span class="label-required">*</span>
+          </label>
+          <input [(ngModel)]="form.title" name="title" required class="form-input"
+            placeholder="VD: Phòng trọ 20m² gần trường ĐH" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">📐 Diện tích (m²)</span>
+          </label>
+          <input type="number" [(ngModel)]="form.area" name="area" min="5" class="form-input" placeholder="20" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">💰 Giá thuê (VNĐ)</span>
+          </label>
+          <input type="number" [(ngModel)]="form.price" name="price" min="0" class="form-input" placeholder="1000000" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-text">💵 Tiền cọc (VNĐ)</span>
+          </label>
+          <input type="number" [(ngModel)]="form.deposit" name="deposit" min="0" class="form-input"
+            placeholder="500000" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          <span class="label-text">⚡ Mô tả tiện ích</span>
+        </label>
+        <textarea [(ngModel)]="form.utilitiesDescription" name="utilitiesDescription" rows="4" class="form-textarea"
+          placeholder="VD: Điện, nước, wifi, máy lạnh, tủ lạnh..."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          {{ isEdit ? '💾 Lưu thay đổi' : '✨ Tạo phòng' }}
+        </button>
+        <a
+          [routerLink]="['/host/rooms']"
+          [queryParams]="currentHostelId ? { hostelId: currentHostelId } : null"
+          class="btn btn-secondary"
+          >❌ Hủy</a
+        >
+      </div>
+    </form>
+
+    <p class="message" *ngIf="message">{{ message }}</p>
+  </div>
+</div>

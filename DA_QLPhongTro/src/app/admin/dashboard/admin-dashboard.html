@@ -1,0 +1,37 @@
+<div class="page-shell">
+  <div class="header-row">
+    <div>
+      <h2 class="page-title">Tổng quan quản trị</h2>
+      <p class="page-sub">Thống kê nhanh người dùng và quản lý hệ thống.</p>
+    </div>
+    <div class="header-actions">
+      <a class="btn ghost" routerLink="/admin/users">Người dùng</a>
+      <a class="btn ghost" routerLink="/admin/listings">Bài viết</a>
+      <button type="button" class="btn primary" (click)="fetch()">Tải lại</button>
+    </div>
+  </div>
+
+  <div *ngIf="message" class="status error">{{ message }}</div>
+
+  <div class="cards" *ngIf="!loading">
+    <div class="card">
+      <div class="card-title">Người dùng</div>
+      <div class="card-value">{{ totalUsers }}</div>
+      <div class="card-sub">
+        Admin: {{ adminCount }} | Chủ trọ: {{ ownerCount }} | Người thuê: {{ renterCount }}
+      </div>
+      <a class="card-link" routerLink="/admin/users">Quản lý người dùng</a>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Bài viết</div>
+      <div class="card-value">{{ totalListings }}</div>
+      <div class="card-sub">
+        Có ảnh: {{ listingsWithImages }} | Chưa có ảnh: {{ listingsWithoutImages }}
+      </div>
+      <a class="card-link" routerLink="/admin/listings">Quản lý bài viết</a>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="loading">Đang tải dữ liệu...</div>
+</div>
