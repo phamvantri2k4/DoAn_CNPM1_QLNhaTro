@@ -1,176 +1,307 @@
-<div class="page-shell">
-  <div class="header-row">
-    <div>
-      <h2 class="page-title">Lịch sử thuê</h2>
-      <p class="page-sub">Xem các lần thuê phòng và thực hiện trả phòng / đánh giá.</p>
+<div class="host-page">
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-title">
+        <span class="material-symbols-outlined">history</span>
+        <h1>Lịch Sử Thuê</h1>
+      </div>
+      <div class="header-stats" *ngIf="pendingRentCount + pendingReturnCount > 0">
+        <div class="stat-pill">
+          <span class="material-symbols-outlined">pending</span>
+          <span><strong>{{ pendingRentCount + pendingReturnCount }}</strong> chờ xử lý</span>
+        </div>
+      </div>
     </div>
-    <button type="button" class="btn primary" (click)="fetch()">Tải lại</button>
-  </div>
-
-  <div *ngIf="error" class="status error">{{ error }}</div>
-  <div *ngIf="message" class="status info">{{ message }}</div>
-
-  <div class="tabs">
-    <button type="button" class="tab" [class.active]="activeTab==='ACTIVE'" (click)="setTab('ACTIVE')">Đang thuê</button>
-    <button type="button" class="tab" [class.active]="activeTab==='ENDED'" (click)="setTab('ENDED')">Đã trả</button>
-    <button type="button" class="tab" [class.active]="activeTab==='PENDING_RENT'" (click)="setTab('PENDING_RENT')">
-      Chờ duyệt thuê
-      <span class="tab-badge" *ngIf="pendingRentCount > 0">{{ pendingRentCount }}</span>
-    </button>
-    <button type="button" class="tab" [class.active]="activeTab==='PENDING_RETURN'" (click)="setTab('PENDING_RETURN')">
-      Chờ duyệt trả
-      <span class="tab-badge" *ngIf="pendingReturnCount > 0">{{ pendingReturnCount }}</span>
-    </button>
-    <button type="button" class="tab" [class.active]="activeTab==='PROCESSED'" (click)="setTab('PROCESSED')">
-      Đã xử lý
+    <button type="button" class="btn-add" (click)="fetch()">
+      <span class="material-symbols-outlined">refresh</span>
+      <span>Tải lại</span>
     </button>
   </div>
 
-  <div class="list" *ngIf="activeTab==='ACTIVE' && activeRentals.length">
-    <article class="card" *ngFor="let x of activeRentals">
-      <div class="card-head">
-        <div>
-          <div class="card-title">{{ getRoomTitle(x) }}</div>
-          <div class="card-sub" *ngIf="getRoomAddress(x)">{{ getRoomAddress(x) }}</div>
-        </div>
-        <span class="chip" [class.active]="canReturn(x)" [class.done]="canReview(x)">{{ x.status }}</span>
-      </div>
-
-      <div class="card-grid">
-        <div class="kv">
-          <div class="k">Bắt đầu</div>
-          <div class="v">{{ x.startDate | date:'dd/MM/yyyy' }}</div>
-        </div>
-        <div class="kv">
-          <div class="k">Kết thúc</div>
-          <div class="v">{{ (x.endDate || '-') }}</div>
-        </div>
-        <div class="kv">
-          <div class="k">Giá/tháng</div>
-          <div class="v">{{ x.monthlyPrice | number:'1.0-0' }} đ</div>
-        </div>
-        <div class="kv">
-          <div class="k">Tiền cọc</div>
-          <div class="v">{{ x.deposit | number:'1.0-0' }} đ</div>
-        </div>
-      </div>
-
-      <div class="section" *ngIf="canReturn(x)">
-        <div class="section-title">Trả phòng</div>
-        <div class="field">
-          <textarea class="field-control" rows="3" [(ngModel)]="returnNote[x.id]" placeholder="Ghi chú trả phòng (ngày dự kiến trả, lý do, liên hệ...)" ></textarea>
-        </div>
-        <div class="actions">
-          <button type="button" class="btn primary" (click)="sendReturnRequest(x)">Gửi yêu cầu trả phòng</button>
-        </div>
-      </div>
-
-      <div class="section" *ngIf="canReview(x)">
-        <div class="section-title">Đánh giá</div>
-        <div class="form-row">
-          <label class="field">
-            <span class="field-label">Số sao (1-5)</span>
-            <input class="field-control" type="number" min="1" max="5" [(ngModel)]="getReviewDraft(x).rating" />
-          </label>
-          <label class="field">
-            <span class="field-label">Bình luận</span>
-            <input class="field-control" type="text" [(ngModel)]="getReviewDraft(x).comment" placeholder="Viết ngắn gọn trải nghiệm của bạn" />
-          </label>
-        </div>
-        <div class="actions">
-          <button type="button" class="btn primary" (click)="submitReview(x)">Gửi đánh giá</button>
-        </div>
-      </div>
-    </article>
+  <div *ngIf="error" class="message-alert error">
+    <span class="material-symbols-outlined">error</span>
+    <span>{{ error }}</span>
+  </div>
+  <div *ngIf="message" class="message-alert">
+    <span class="material-symbols-outlined">info</span>
+    <span>{{ message }}</span>
   </div>
 
-  <div class="list" *ngIf="activeTab==='ENDED' && endedRentals.length">
-    <article class="card" *ngFor="let x of endedRentals">
-      <div class="card-head">
-        <div>
-          <div class="card-title">{{ getRoomTitle(x) }}</div>
-          <div class="card-sub" *ngIf="getRoomAddress(x)">{{ getRoomAddress(x) }}</div>
-        </div>
-        <span class="chip" [class.active]="canReturn(x)" [class.done]="canReview(x)">{{ x.status }}</span>
-      </div>
-
-      <div class="card-grid">
-        <div class="kv">
-          <div class="k">Bắt đầu</div>
-          <div class="v">{{ x.startDate | date:'dd/MM/yyyy' }}</div>
-        </div>
-        <div class="kv">
-          <div class="k">Kết thúc</div>
-          <div class="v">{{ (x.endDate || '-') }}</div>
-        </div>
-        <div class="kv">
-          <div class="k">Giá/tháng</div>
-          <div class="v">{{ x.monthlyPrice | number:'1.0-0' }} đ</div>
-        </div>
-        <div class="kv">
-          <div class="k">Tiền cọc</div>
-          <div class="v">{{ x.deposit | number:'1.0-0' }} đ</div>
-        </div>
-      </div>
-
-      <div class="section" *ngIf="canReview(x)">
-        <div class="section-title">Đánh giá</div>
-        <div class="form-row">
-          <label class="field">
-            <span class="field-label">Số sao (1-5)</span>
-            <input class="field-control" type="number" min="1" max="5" [(ngModel)]="getReviewDraft(x).rating" />
-          </label>
-          <label class="field">
-            <span class="field-label">Bình luận</span>
-            <input class="field-control" type="text" [(ngModel)]="getReviewDraft(x).comment" placeholder="Viết ngắn gọn trải nghiệm của bạn" />
-          </label>
-        </div>
-        <div class="actions">
-          <button type="button" class="btn primary" (click)="submitReview(x)">Gửi đánh giá</button>
-        </div>
-      </div>
-    </article>
+  <!-- Tabs -->
+  <div class="tabs-bar">
+    <button type="button" class="tab-btn" [class.active]="activeTab==='ACTIVE'" (click)="setTab('ACTIVE')">
+      <span class="material-symbols-outlined">key</span>
+      <span>Đang thuê</span>
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab==='ENDED'" (click)="setTab('ENDED')">
+      <span class="material-symbols-outlined">check_circle</span>
+      <span>Đã trả</span>
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab==='PENDING_RENT'" (click)="setTab('PENDING_RENT')">
+      <span class="material-symbols-outlined">schedule</span>
+      <span>Chờ duyệt thuê</span>
+      <span class="badge" *ngIf="pendingRentCount > 0">{{ pendingRentCount }}</span>
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab==='PENDING_RETURN'"
+      (click)="setTab('PENDING_RETURN')">
+      <span class="material-symbols-outlined">logout</span>
+      <span>Chờ duyệt trả</span>
+      <span class="badge" *ngIf="pendingReturnCount > 0">{{ pendingReturnCount }}</span>
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab==='PROCESSED'" (click)="setTab('PROCESSED')">
+      <span class="material-symbols-outlined">done_all</span>
+      <span>Đã xử lý</span>
+    </button>
   </div>
 
-  <div class="list" *ngIf="activeTab==='PENDING_RENT' && pendingRentRequests.length">
-    <article class="card" *ngFor="let r of pendingRentRequests">
-      <div class="card-head">
-        <div>
-          <div class="card-title">{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</div>
-          <div class="card-sub">Loại: Thuê phòng</div>
+  <!-- Active Rentals -->
+  <div class="requests-list" *ngIf="activeTab==='ACTIVE' && activeRentals.length; else emptyActive">
+    <div class="request-card" *ngFor="let x of activeRentals">
+      <div class="request-header">
+        <div class="request-info">
+          <h3>{{ getRoomTitle(x) }}</h3>
+          <p *ngIf="getRoomAddress(x)">{{ getRoomAddress(x) }}</p>
+          <span class="status-badge accepted">
+            <span class="material-symbols-outlined">check_circle</span>
+            {{ x.status }}
+          </span>
         </div>
-        <span class="chip">{{ getRequestStatusLabel(r.status) }}</span>
       </div>
-      <div class="meta">{{ (r.sentAt || r.sentDate) | date:'short' }}</div>
-      <div class="note">{{ r.note }}</div>
-    </article>
+
+      <div class="rental-info-grid">
+        <div class="info-item">
+          <span class="info-label">Bắt đầu</span>
+          <span class="info-value">{{ x.startDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Kết thúc</span>
+          <span class="info-value">{{ x.endDate || '-' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Giá/tháng</span>
+          <span class="info-value">{{ x.monthlyPrice | number:'1.0-0' }}₫</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Tiền cọc</span>
+          <span class="info-value">{{ x.deposit | number:'1.0-0' }}₫</span>
+        </div>
+      </div>
+
+      <!-- Return Request Section -->
+      <div class="return-section" *ngIf="canReturn(x)">
+        <div class="return-section-title">
+          <span class="material-symbols-outlined">logout</span>
+          Trả phòng
+        </div>
+        <div class="form-field">
+          <textarea [(ngModel)]="returnNote[x.id]" placeholder="Ghi chú trả phòng (ngày dự kiến, lý do...)"></textarea>
+        </div>
+        <div class="request-actions">
+          <button type="button" class="action-btn accept" (click)="sendReturnRequest(x)">
+            <span class="material-symbols-outlined">send</span>
+            <span>Gửi yêu cầu trả</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Review Section -->
+      <div class="review-section" *ngIf="canReview(x)">
+        <div class="review-section-title">
+          <span class="material-symbols-outlined">star</span>
+          Đánh giá
+        </div>
+        <div class="review-form">
+          <div class="form-field">
+            <label>Số sao (1-5)</label>
+            <input type="number" min="1" max="5" [(ngModel)]="getReviewDraft(x).rating" />
+          </div>
+          <div class="form-field">
+            <label>Bình luận</label>
+            <input type="text" [(ngModel)]="getReviewDraft(x).comment" placeholder="Viết trải nghiệm của bạn" />
+          </div>
+        </div>
+        <div class="request-actions">
+          <button type="button" class="action-btn accept" (click)="submitReview(x)">
+            <span class="material-symbols-outlined">send</span>
+            <span>Gửi đánh giá</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="list" *ngIf="activeTab==='PENDING_RETURN' && pendingReturnRequests.length">
-    <article class="card" *ngFor="let r of pendingReturnRequests">
-      <div class="card-head">
-        <div>
-          <div class="card-title">{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</div>
-          <div class="card-sub">Loại: Trả phòng</div>
-        </div>
-        <span class="chip">{{ getRequestStatusLabel(r.status) }}</span>
+  <ng-template #emptyActive>
+    <div class="empty-state" *ngIf="activeTab==='ACTIVE'">
+      <div class="empty-icon">
+        <span class="material-symbols-outlined">inbox</span>
       </div>
-      <div class="meta">{{ (r.sentAt || r.sentDate) | date:'short' }}</div>
-      <div class="note">{{ r.note }}</div>
-    </article>
+      <h3>Chưa có phòng đang thuê</h3>
+      <p>Gửi yêu cầu thuê phòng để bắt đầu</p>
+    </div>
+  </ng-template>
+
+  <!-- Ended Rentals (similar structure, simplified) -->
+  <div class="requests-list" *ngIf="activeTab==='ENDED' && endedRentals.length">
+    <div class="request-card processed" *ngFor="let x of endedRentals">
+      <div class="request-header">
+        <div class="request-info">
+          <h3>{{ getRoomTitle(x) }}</h3>
+          <p *ngIf="getRoomAddress(x)">{{ getRoomAddress(x) }}</p>
+          <span class="status-badge rejected">
+            <span class="material-symbols-outlined">check_circle</span>
+            {{ x.status }}
+          </span>
+        </div>
+      </div>
+
+      <div class="rental-info-grid">
+        <div class="info-item">
+          <span class="info-label">Bắt đầu</span>
+          <span class="info-value">{{ x.startDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Kết thúc</span>
+          <span class="info-value">{{ x.endDate || '-' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Giá/tháng</span>
+          <span class="info-value">{{ x.monthlyPrice | number:'1.0-0' }}₫</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Tiền cọc</span>
+          <span class="info-value">{{ x.deposit | number:'1.0-0' }}₫</span>
+        </div>
+      </div>
+
+      <div class="review-section" *ngIf="canReview(x)">
+        <div class="review-section-title">
+          <span class="material-symbols-outlined">star</span>
+          Đánh giá
+        </div>
+        <div class="review-form">
+          <div class="form-field">
+            <label>Số sao (1-5)</label>
+            <input type="number" min="1" max="5" [(ngModel)]="getReviewDraft(x).rating" />
+          </div>
+          <div class="form-field">
+            <label>Bình luận</label>
+            <input type="text" [(ngModel)]="getReviewDraft(x).comment" placeholder="Viết trải nghiệm" />
+          </div>
+        </div>
+        <div class="request-actions">
+          <button type="button" class="action-btn accept" (click)="submitReview(x)">
+            <span class="material-symbols-outlined">send</span>
+            <span>Gửi đánh giá</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="list" *ngIf="activeTab==='PROCESSED' && processedRequests.length">
-    <article class="card" *ngFor="let r of processedRequests">
-      <div class="card-head">
-        <div>
-          <div class="card-title">{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</div>
-          <div class="card-sub">Loại: {{ normalizeType(r.requestType) === 'RETURN' ? 'Trả phòng' : 'Thuê phòng' }}</div>
+  <!-- Pending/Processed Requests (reuse rental-requests structure) -->
+  <div class="requests-list" *ngIf="activeTab==='PENDING_RENT' && pendingRentRequests.length">
+    <div class="request-card" *ngFor="let r of pendingRentRequests">
+      <div class="request-header">
+        <div class="request-info">
+          <h3>{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</h3>
+          <span class="status-badge pending">
+            <span class="material-symbols-outlined">schedule</span>
+            {{ getRequestStatusLabel(r.status) }}
+          </span>
         </div>
-        <span class="chip" [class.done]="normalizeStatus(r.status)==='ACCEPTED'" [class.danger]="normalizeStatus(r.status)==='REJECTED'">{{ getRequestStatusLabel(r.status) }}</span>
       </div>
-      <div class="meta">{{ (r.sentAt || r.sentDate) | date:'short' }}</div>
-      <div class="note">{{ r.note }}</div>
-    </article>
+      <div class="request-meta">
+        <div class="meta-item">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <span>{{ (r.sentAt || r.sentDate) | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+      <div class="request-note" *ngIf="r.note">
+        <span class="material-symbols-outlined">note</span>
+        <p>{{ r.note }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="requests-list" *ngIf="activeTab==='PENDING_RETURN' && pendingReturnRequests.length">
+    <div class="request-card" *ngFor="let r of pendingReturnRequests">
+      <div class="request-header">
+        <div class="request-info">
+          <h3>{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</h3>
+          <span class="status-badge pending">
+            <span class="material-symbols-outlined">schedule</span>
+            {{ getRequestStatusLabel(r.status) }}
+          </span>
+        </div>
+      </div>
+      <div class="request-meta">
+        <div class="meta-item">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <span>{{ (r.sentAt || r.sentDate) | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+      <div class="request-note" *ngIf="r.note">
+        <span class="material-symbols-outlined">note</span>
+        <p>{{ r.note }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="requests-list" *ngIf="activeTab==='PROCESSED' && processedRequests.length">
+    <div class="request-card processed" *ngFor="let r of processedRequests">
+      <div class="request-header">
+        <div class="request-info">
+          <h3>{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</h3>
+          <span class="status-badge" [ngClass]="{
+            'accepted': normalizeStatus(r.status)==='ACCEPTED',
+            'rejected': normalizeStatus(r.status)==='REJECTED'
+          }">
+            <span class="material-symbols-outlined">
+              {{ normalizeStatus(r.status)==='ACCEPTED' ? 'check_circle' : 'cancel' }}
+            </span>
+            {{ getRequestStatusLabel(r.status) }}
+          </span>
+        </div>
+      </div>
+      <div class="request-meta">
+        <div class="meta-item">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <span>{{ (r.sentAt || r.sentDate) | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+      <div class="request-note" *ngIf="r.note">
+        <span class="material-symbols-outlined">note</span>
+        <p>{{ r.note }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty states for other tabs -->
+  <div class="empty-state" *ngIf="activeTab==='ENDED' && !endedRentals.length">
+    <div class="empty-icon">
+      <span class="material-symbols-outlined">inbox</span>
+    </div>
+    <h3>Chưa có lịch sử trả phòng</h3>
+  </div>
+
+  <div class="empty-state" *ngIf="activeTab==='PENDING_RENT' && !pendingRentRequests.length">
+    <div class="empty-icon">
+      <span class="material-symbols-outlined">inbox</span>
+    </div>
+    <h3>Không có yêu cầu thuê nào đang chờ</h3>
+  </div>
+
+  <div class="empty-state" *ngIf="activeTab==='PENDING_RETURN' && !pendingReturnRequests.length">
+    <div class="empty-icon">
+      <span class="material-symbols-outlined">inbox</span>
+    </div>
+    <h3>Không có yêu cầu trả nào đang chờ</h3>
+  </div>
+
+  <div class="empty-state" *ngIf="activeTab==='PROCESSED' && !processedRequests.length">
+    <div class="empty-icon">
+      <span class="material-symbols-outlined">history</span>
+    </div>
+    <h3>Chưa có yêu cầu nào đã xử lý</h3>
   </div>
 </div>

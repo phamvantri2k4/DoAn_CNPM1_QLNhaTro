@@ -34,4 +34,28 @@ export class HostHostelListComponent {
     });
   }
 
+  deleteHostel(hostel: Hostel): void {
+    const hostelId = hostel.id ?? hostel.hostelId;
+    if (!hostelId) {
+      this.message = 'Không thể xóa: ID trọ không hợp lệ';
+      return;
+    }
+
+    if (!confirm(`Bạn có chắc muốn xóa trọ "${hostel.name}"? Hành động này không thể hoàn tác.`)) {
+      return;
+    }
+
+    this.hostelService.delete(hostelId).subscribe({
+      next: () => {
+        this.message = 'Đã xóa trọ thành công';
+        this.hostels = this.hostels.filter(h => (h.id ?? h.hostelId) !== hostelId);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.message = `Lỗi khi xóa: ${err.error?.message || 'Không xóa được'}`;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
 }

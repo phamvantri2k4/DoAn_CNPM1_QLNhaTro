@@ -1,146 +1,247 @@
-<section class="page" *ngIf="!loading">
-  <div *ngIf="message" class="message">{{ message }}</div>
+<div class="detail-page" *ngIf="!loading">
+  <!-- Back Button -->
+  <div class="back-bar">
+    <button type="button" onclick="history.back()" class="btn-back">
+      <span class="material-symbols-outlined">arrow_back</span>
+      <span>Quay lại</span>
+    </button>
+  </div>
 
-  <div *ngIf="listing" class="card">
-    <h2 class="title">{{ listing.title }}</h2>
-    <p class="desc">{{ listing.description || 'Chưa có mô tả' }}</p>
+  <div *ngIf="message" class="message-alert">
+    <span class="material-symbols-outlined">info</span>
+    <span>{{ message }}</span>
+  </div>
 
-    <div class="gallery" *ngIf="images.length">
+  <div *ngIf="listing" class="listing-detail-container">
+    <!-- Header -->
+    <div class="listing-header">
+      <h1>{{ listing.title }}</h1>
+      <p class="listing-description">{{ listing.description || 'Chưa có mô tả chi tiết' }}</p>
+    </div>
+
+    <!-- Image Gallery -->
+    <div class="image-gallery" *ngIf="images.length">
       <button type="button" class="gallery-item" *ngFor="let img of images; let i = index" (click)="openLightbox(i)">
-        <img [src]="img" alt="image" loading="lazy" decoding="async" (error)="$any($event.target).style.display='none'" />
+        <img [src]="img" alt="Ảnh phòng" loading="lazy" (error)="$any($event.target).style.display='none'" />
       </button>
     </div>
 
+    <!-- Lightbox -->
     <div class="lightbox" *ngIf="lightboxOpen" (click)="closeLightbox()">
       <div class="lightbox-content" (click)="$event.stopPropagation()">
-        <button type="button" class="lightbox-close" (click)="closeLightbox()">✕</button>
-
-        <button type="button" class="lightbox-nav prev" (click)="prevLightbox()" [disabled]="images.length <= 1">‹</button>
-        <img class="lightbox-img" [src]="lightboxImage" alt="image" />
-        <button type="button" class="lightbox-nav next" (click)="nextLightbox()" [disabled]="images.length <= 1">›</button>
-
+        <button type="button" class="lightbox-close" (click)="closeLightbox()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+        <button type="button" class="lightbox-nav prev" (click)="prevLightbox()" [disabled]="images.length <= 1">
+          <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <img class="lightbox-img" [src]="lightboxImage" alt="Ảnh phòng" />
+        <button type="button" class="lightbox-nav next" (click)="nextLightbox()" [disabled]="images.length <= 1">
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
         <div class="lightbox-count">{{ (lightboxIndex + 1) }} / {{ images.length }}</div>
       </div>
     </div>
 
-    <div class="room" *ngIf="room">
-      <div class="row"><b>Phòng:</b> {{ room.title }}</div>
-      <div class="row"><b>Giá:</b> {{ room.price | number:'1.0-0' }} đ</div>
-      <div class="row"><b>Tiện ích:</b> {{ room.utilitiesDescription || 'Chưa cập nhật' }}</div>
+    <!-- Room Info Section -->
+    <div class="info-section" *ngIf="room">
+      <h2 class="section-title">
+        <span class="material-symbols-outlined">info</span>
+        Thông tin phòng
+      </h2>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <span class="material-symbols-outlined">attach_money</span>
+          <div class="info-content">
+            <div class="info-label">Giá thuê</div>
+            <div class="info-value">{{ room.price | number:'1.0-0' }}₫/tháng</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <span class="material-symbols-outlined">square_foot</span>
+          <div class="info-content">
+            <div class="info-label">Diện tích</div>
+            <div class="info-value">{{ room.area }}m²</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <span class="material-symbols-outlined">home</span>
+          <div class="info-content">
+            <div class="info-label">Tên phòng</div>
+            <div class="info-value">{{ room.title }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="utilities-section" *ngIf="room.utilitiesDescription">
+        <div class="utilities-label">
+          <span class="material-symbols-outlined">check_circle</span>
+          Tiện ích
+        </div>
+        <p>{{ room.utilitiesDescription }}</p>
+      </div>
     </div>
 
-    <div class="owner" *ngIf="listing">
-      <div class="owner-head">
-        <h3 class="owner-title">Liên hệ chủ trọ</h3>
-        <p class="owner-sub">Thông tin liên hệ để bạn trao đổi trước khi thuê.</p>
-      </div>
-      <div class="owner-grid">
-        <div class="owner-item">
-          <div class="k">Tên</div>
-          <div class="v">{{ listing.ownerFullName || '(Chưa cập nhật)' }}</div>
-        </div>
-        <div class="owner-item">
-          <div class="k">SĐT</div>
-          <div class="v">{{ listing.ownerPhone || '(Chưa cập nhật)' }}</div>
-        </div>
-        <div class="owner-item">
-          <div class="k">Email</div>
-          <div class="v">{{ listing.ownerEmail || '(Chưa cập nhật)' }}</div>
-        </div>
-      </div>
-    </div>
+    <!-- Address Section -->
+    <div class="info-section" *ngIf="listing">
+      <h2 class="section-title">
+        <span class="material-symbols-outlined">location_on</span>
+        Địa chỉ
+      </h2>
 
-    <div class="reviews" *ngIf="room">
-      <div class="reviews-head">
-        <h3 class="reviews-title">Đánh giá</h3>
-        <div class="reviews-summary" *ngIf="reviews.length">
-          <span class="stars">
-            <span class="star filled" *ngFor="let _ of getStars(averageRating)">★</span>
-            <span class="star" *ngFor="let _ of getEmptyStars(averageRating)">★</span>
+      <div class="address-details">
+        <div class="address-row" *ngIf="listing.address">
+          <span class="material-symbols-outlined">home_pin</span>
+          <span>{{ listing.address }}</span>
+        </div>
+        <div class="address-row" *ngIf="listing.ward || listing.district || listing.province">
+          <span class="material-symbols-outlined">place</span>
+          <span>
+            <ng-container *ngIf="listing.ward">{{ listing.ward }}, </ng-container>
+            <ng-container *ngIf="listing.district">{{ listing.district }}, </ng-container>
+            <ng-container *ngIf="listing.province">{{ listing.province }}</ng-container>
           </span>
-          <span class="avg">{{ averageRatingText }}/5</span>
-          <span class="count">({{ reviews.length }} đánh giá)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Owner Contact -->
+    <div class="info-section">
+      <h2 class="section-title">
+        <span class="material-symbols-outlined">person</span>
+        Liên hệ chủ trọ
+      </h2>
+
+      <div class="contact-grid">
+        <div class="contact-item">
+          <span class="material-symbols-outlined">badge</span>
+          <div>
+            <div class="contact-label">Họ tên</div>
+            <div class="contact-value">{{ listing.ownerFullName || 'Chưa cập nhật' }}</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <span class="material-symbols-outlined">call</span>
+          <div>
+            <div class="contact-label">Số điện thoại</div>
+            <div class="contact-value">{{ listing.ownerPhone || 'Chưa cập nhật' }}</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <span class="material-symbols-outlined">mail</span>
+          <div>
+            <div class="contact-label">Email</div>
+            <div class="contact-value">{{ listing.ownerEmail || 'Chưa cập nhật' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="info-section" *ngIf="room">
+      <h2 class="section-title">
+        <span class="material-symbols-outlined">star</span>
+        Đánh giá
+      </h2>
+
+      <div class="reviews-summary" *ngIf="reviews.length">
+        <div class="rating-display">
+          <span class="rating-number">{{ averageRatingText }}</span>
+          <div>
+            <div class="stars">
+              <span class="star filled" *ngFor="let _ of getStars(averageRating)">★</span>
+              <span class="star empty" *ngFor="let _ of getEmptyStars(averageRating)">★</span>
+            </div>
+            <div class="review-count">{{ reviews.length }} đánh giá</div>
+          </div>
         </div>
       </div>
 
       <div class="reviews-loading" *ngIf="reviewLoading">Đang tải đánh giá...</div>
 
       <div class="reviews-empty" *ngIf="!reviewLoading && !reviews.length">
-        Chưa có đánh giá cho phòng này.
+        <span class="material-symbols-outlined">rate_review</span>
+        <p>Chưa có đánh giá cho phòng này</p>
       </div>
 
       <div class="reviews-list" *ngIf="!reviewLoading && reviews.length">
-        <article class="review" *ngFor="let r of reviews">
-          <div class="review-row">
-            <span class="stars">
-              <span class="star filled" *ngFor="let _ of getStars(r.rating)">★</span>
-              <span class="star" *ngFor="let _ of getEmptyStars(r.rating)">★</span>
-            </span>
-            <span class="date">{{ r.createdAt | date:'dd/MM/yyyy' }}</span>
+        <div class="review-card" *ngFor="let r of reviews">
+          <div class="review-header">
+            <div class="review-author">
+              <div class="review-avatar">
+                <span class="material-symbols-outlined">account_circle</span>
+              </div>
+              <span>{{ r.renterFullName || 'Người dùng' }}</span>
+            </div>
+            <div class="review-date">{{ r.createdAt | date:'dd/MM/yyyy' }}</div>
           </div>
-          <div class="reviewer">{{ r.renterFullName || '(Chưa cập nhật tên)' }}</div>
-          <div class="comment">{{ r.comment || 'Không có bình luận' }}</div>
-        </article>
+          <div class="review-rating">
+            <span class="star filled" *ngFor="let _ of getStars(r.rating)">★</span>
+            <span class="star empty" *ngFor="let _ of getEmptyStars(r.rating)">★</span>
+          </div>
+          <p class="review-comment">{{ r.comment || 'Không có bình luận' }}</p>
+        </div>
       </div>
     </div>
 
-    <div class="actions" *ngIf="loggedIn && canSendRequest">
-      <div class="actions-head">
-        <h3 class="actions-title">Gửi yêu cầu</h3>
-        <p class="actions-sub">Thông tin sẽ được gửi đến chủ trọ để xử lý.</p>
-      </div>
+    <!-- Request Section -->
+    <div class="request-section" *ngIf="loggedIn && canSendRequest">
+      <h2 class="section-title">
+        <span class="material-symbols-outlined">send</span>
+        Gửi yêu cầu thuê
+      </h2>
 
-      <div class="actions-foot" *ngIf="!showRequestForm">
-        <button type="button" class="btn primary" (click)="openRequestForm()">Gửi yêu cầu thuê</button>
-      </div>
+      <button type="button" class="btn-primary-gradient" *ngIf="!showRequestForm" (click)="openRequestForm()">
+        <span class="material-symbols-outlined">add</span>
+        <span>Tạo yêu cầu thuê</span>
+      </button>
 
       <div class="request-form" *ngIf="showRequestForm">
-        <div class="form-grid">
-          <div class="field">
-            <span class="field-label">Loại yêu cầu</span>
-            <div class="field-control">Thuê phòng</div>
+        <div class="form-info">
+          <div class="form-label">Thông tin liên hệ của bạn</div>
+          <div class="user-info">
+            <div><strong>{{ currentUser?.fullName || 'Chưa có tên' }}</strong></div>
+            <div *ngIf="currentUser?.phone">SĐT: {{ currentUser?.phone }}</div>
+            <div *ngIf="currentUser?.email">Email: {{ currentUser?.email }}</div>
           </div>
-
-          <div class="field">
-            <span class="field-label">Liên hệ</span>
-            <div class="field-control contact">
-              <div class="contact-line"><b>{{ currentUser?.fullName || '(Chưa có tên)' }}</b></div>
-              <div class="contact-line" *ngIf="currentUser?.phone">SĐT: {{ currentUser?.phone }}</div>
-              <div class="contact-line" *ngIf="currentUser?.email">Email: {{ currentUser?.email }}</div>
-            </div>
-          </div>
-
-          <label class="field field-full">
-            <span class="field-label">Ghi chú</span>
-            <textarea class="field-control" [(ngModel)]="request.note" rows="3"
-              placeholder="Ví dụ: thời gian muốn dọn vào, số người ở, nhu cầu xem phòng..."></textarea>
-          </label>
         </div>
 
-        <div class="actions-foot form-actions">
-          <button type="button" class="btn secondary" [disabled]="sendingRequest" (click)="closeRequestForm()">Hủy</button>
-          <button type="button" class="btn primary" [disabled]="sendingRequest" (click)="sendRequest()">
-            {{ sendingRequest ? 'Đang gửi...' : 'Gửi yêu cầu' }}
+        <div class="form-field">
+          <label>Ghi chú</label>
+          <textarea [(ngModel)]="request.note" rows="4"
+            placeholder="Thời gian muốn dọn vào, số người ở, nhu cầu xem phòng..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" [disabled]="sendingRequest" (click)="closeRequestForm()">
+            Hủy
+          </button>
+          <button type="button" class="btn-primary" [disabled]="sendingRequest" (click)="sendRequest()">
+            <span class="material-symbols-outlined">send</span>
+            <span>{{ sendingRequest ? 'Đang gửi...' : 'Gửi yêu cầu' }}</span>
           </button>
         </div>
       </div>
     </div>
 
-    <div class="actions" *ngIf="loggedIn && !canSendRequest">
-      <div class="actions-head">
-        <h3 class="actions-title">Gửi yêu cầu</h3>
-        <p class="actions-sub">Chỉ tài khoản người thuê (renter) mới gửi được yêu cầu thuê.</p>
+    <div class="request-section" *ngIf="loggedIn && !canSendRequest">
+      <div class="info-message">
+        <span class="material-symbols-outlined">info</span>
+        <span>Chỉ tài khoản người thuê mới có thể gửi yêu cầu thuê phòng</span>
       </div>
     </div>
 
-    <div class="actions" *ngIf="!loggedIn">
-      <a routerLink="/auth/login">Đăng nhập để gửi yêu cầu thuê</a>
-    </div>
-
-    <div class="footer">
-      <a routerLink="/home">Quay lại trang chủ</a>
+    <div class="request-section" *ngIf="!loggedIn">
+      <a routerLink="/auth/login" class="btn-primary-gradient">
+        <span class="material-symbols-outlined">login</span>
+        <span>Đăng nhập để gửi yêu cầu</span>
+      </a>
     </div>
   </div>
-</section>
+</div>
 
-<div *ngIf="loading" class="loading">Đang tải...</div>
+<div *ngIf="loading" class="loading-state">
+  <span class="material-symbols-outlined">progress_activity</span>
+  <p>Đang tải...</p>
+</div>

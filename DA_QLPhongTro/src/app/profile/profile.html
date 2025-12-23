@@ -1,53 +1,128 @@
-<div class="page-shell">
-  <div class="card">
-    <div class="head">
-      <div>
-        <h2 class="title">Hồ sơ cá nhân</h2>
-        <p class="sub">Cập nhật thông tin liên hệ và ảnh đại diện.</p>
+<div class="profile-page">
+  <div class="profile-header">
+    <div class="header-title">
+      <span class="material-symbols-outlined">account_circle</span>
+      <h1>Thông Tin Cá Nhân</h1>
+    </div>
+  </div>
+
+  <div class="profile-content">
+    <!-- Avatar Section -->
+    <div class="avatar-section">
+      <div class="avatar-container">
+        <img *ngIf="avatarUrl; else noAvatar" [src]="avatarUrl" alt="Avatar" class="avatar-image" />
+        <ng-template #noAvatar>
+          <div class="avatar-placeholder">
+            <span class="material-symbols-outlined">person</span>
+          </div>
+        </ng-template>
+        <label class="avatar-upload-btn">
+          <span class="material-symbols-outlined">camera_alt</span>
+          <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
+        </label>
       </div>
+      <p class="avatar-hint">Click để đổi ảnh đại diện</p>
     </div>
 
-    <form *ngIf="form" class="form" (ngSubmit)="save()">
-      <div class="avatar-row">
-        <div class="avatar">
-          <img *ngIf="getAvatarSrc()" [src]="getAvatarSrc()" alt="Avatar" (error)="$any($event.target).style.display='none'" />
-          <div *ngIf="!form.avatarUrl" class="avatar-placeholder">Ảnh</div>
+    <!-- Info Form -->
+    <div class="info-section">
+      <form (ngSubmit)="saveProfile()" class="profile-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>
+              <span class="material-symbols-outlined">badge</span>
+              <span>Họ và tên</span>
+            </label>
+            <input type="text" [(ngModel)]="form.fullName" name="fullName" placeholder="Nhập họ tên" required />
+          </div>
+
+          <div class="form-group">
+            <label>
+              <span class="material-symbols-outlined">mail</span>
+              <span>Email</span>
+            </label>
+            <input type="email" [(ngModel)]="form.email" name="email" placeholder="email@example.com" required />
+          </div>
         </div>
-        <div class="avatar-fields">
-          <label class="field">
-            <span class="field-label">Ảnh đại diện</span>
-            <input class="field-control" type="file" accept="image/*" (change)="onAvatarSelected($event)" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>
+              <span class="material-symbols-outlined">phone</span>
+              <span>Số điện thoại</span>
+            </label>
+            <input type="tel" [(ngModel)]="form.phone" name="phone" placeholder="0123456789" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <span class="material-symbols-outlined">location_on</span>
+            <span>Địa chỉ</span>
           </label>
+          <input type="text" [(ngModel)]="form.address" name="address" placeholder="Nhập địa chỉ" />
         </div>
+
+        <div *ngIf="message" class="message-box" [class.error]="isError">
+          <span class="material-symbols-outlined">
+            {{ isError ? 'error' : 'check_circle' }}
+          </span>
+          <span>{{ message }}</span>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-save" [disabled]="isSaving">
+            <span *ngIf="!isSaving">Lưu thay đổi</span>
+            <span *ngIf="isSaving" class="loading">
+              <span class="spinner"></span>
+              <span>Đang lưu...</span>
+            </span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Change Password Section -->
+      <div class="password-section">
+        <h3>
+          <span class="material-symbols-outlined">lock_reset</span>
+          Đổi mật khẩu
+        </h3>
+
+        <form (ngSubmit)="changePassword()" class="password-form">
+          <div class="form-group">
+            <label>
+              <span class="material-symbols-outlined">lock</span>
+              <span>Mật khẩu hiện tại</span>
+            </label>
+            <input type="password" [(ngModel)]="passwordForm.oldPassword" name="oldPassword"
+              placeholder="Nhập mật khẩu hiện tại" required />
+          </div>
+
+          <div class="form-group">
+            <label>
+              <span class="material-symbols-outlined">lock_open</span>
+              <span>Mật khẩu mới</span>
+            </label>
+            <input type="password" [(ngModel)]="passwordForm.newPassword" name="newPassword"
+              placeholder="Nhập mật khẩu mới" required />
+          </div>
+
+          <div *ngIf="passwordMessage" class="message-box" [class.error]="isPasswordError">
+            <span class="material-symbols-outlined">
+              {{ isPasswordError ? 'error' : 'check_circle' }}
+            </span>
+            <span>{{ passwordMessage }}</span>
+          </div>
+
+          <button type="submit" class="btn-change-password" [disabled]="isChangingPassword">
+            <span *ngIf="!isChangingPassword">Đổi mật khẩu</span>
+            <span *ngIf="isChangingPassword" class="loading">
+              <span class="spinner"></span>
+              <span>Đang xử lý...</span>
+            </span>
+          </button>
+        </form>
       </div>
-
-      <div class="grid">
-        <label class="field">
-          <span class="field-label">Họ tên</span>
-          <input class="field-control" [(ngModel)]="form.fullName" name="fullName" required />
-        </label>
-
-        <label class="field">
-          <span class="field-label">Email</span>
-          <input class="field-control" [(ngModel)]="form.email" name="email" disabled />
-        </label>
-
-        <label class="field">
-          <span class="field-label">Số điện thoại</span>
-          <input class="field-control" [(ngModel)]="form.phone" name="phone" />
-        </label>
-
-        <label class="field field-full">
-          <span class="field-label">Địa chỉ</span>
-          <input class="field-control" [(ngModel)]="form.address" name="address" />
-        </label>
-      </div>
-
-      <div class="actions">
-        <button type="submit" class="btn primary">Lưu thay đổi</button>
-      </div>
-    </form>
-
-    <p class="message" *ngIf="message">{{ message }}</p>
+    </div>
   </div>
 </div>

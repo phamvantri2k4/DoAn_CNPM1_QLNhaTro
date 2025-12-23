@@ -1,82 +1,182 @@
-<section class="page">
-  <div class="head">
-    <div>
-      <h2 class="title">Yêu cầu thuê / trả phòng</h2>
-      <p class="sub">Quản lý các yêu cầu từ người thuê. Chấp nhận sẽ tự động cập nhật trạng thái phòng/bài đăng.</p>
+<div class="host-page">
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-title">
+        <span class="material-symbols-outlined">request_page</span>
+        <h1>Yêu Cầu Thuê/Trả Phòng</h1>
+      </div>
+      <div class="header-stats" *ngIf="pendingRentCount + pendingReturnCount > 0">
+        <div class="stat-pill">
+          <span class="material-symbols-outlined">pending</span>
+          <span><strong>{{ pendingRentCount + pendingReturnCount }}</strong> chờ xử lý</span>
+        </div>
+      </div>
     </div>
-    <button type="button" class="btn" (click)="fetch()">Tải lại</button>
-  </div>
-
-  <div *ngIf="message" class="message">{{ message }}</div>
-
-  <div class="tabs">
-    <button type="button" class="tab" [class.active]="activeTab==='PENDING_RENT'" (click)="setTab('PENDING_RENT')">
-      Chờ duyệt thuê
-      <span class="tab-badge" *ngIf="pendingRentCount > 0">{{ pendingRentCount }}</span>
-    </button>
-    <button type="button" class="tab" [class.active]="activeTab==='PENDING_RETURN'" (click)="setTab('PENDING_RETURN')">
-      Chờ duyệt trả
-      <span class="tab-badge" *ngIf="pendingReturnCount > 0">{{ pendingReturnCount }}</span>
-    </button>
-    <button type="button" class="tab" [class.active]="activeTab==='PROCESSED'" (click)="setTab('PROCESSED')">
-      Đã xử lý
+    <button type="button" class="btn-add" (click)="fetch()">
+      <span class="material-symbols-outlined">refresh</span>
+      <span>Tải lại</span>
     </button>
   </div>
 
-  <div class="list" *ngIf="activeTab==='PENDING_RENT' && pendingRentRequests.length">
-    <article class="card" *ngFor="let r of pendingRentRequests">
-      <div class="row">
-        <div class="left">
-          <div class="k">Phòng</div>
-          <div class="v">{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</div>
-        </div>
-        <div class="right">
-          <span class="chip">Chờ duyệt</span>
-        </div>
-      </div>
-      <div class="meta">{{ r.sentAt || r.sentDate | date:'short' }}</div>
-      <div class="note">{{ r.note }}</div>
-      <div class="actions" *ngIf="isPending(r)">
-        <button type="button" class="btn primary" (click)="updateStatus(r, 'ACCEPTED')">Chấp nhận</button>
-        <button type="button" class="btn danger" (click)="updateStatus(r, 'REJECTED')">Từ chối</button>
-      </div>
-    </article>
+  <div *ngIf="message" class="message-alert">
+    <span class="material-symbols-outlined">info</span>
+    <span>{{ message }}</span>
   </div>
 
-  <div class="list" *ngIf="activeTab==='PENDING_RETURN' && pendingReturnRequests.length">
-    <article class="card" *ngFor="let r of pendingReturnRequests">
-      <div class="row">
-        <div class="left">
-          <div class="k">Phòng</div>
-          <div class="v">{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</div>
-        </div>
-        <div class="right">
-          <span class="chip">Chờ duyệt</span>
-        </div>
-      </div>
-      <div class="meta">{{ r.sentAt || r.sentDate | date:'short' }}</div>
-      <div class="note">{{ r.note }}</div>
-      <div class="actions" *ngIf="isPending(r)">
-        <button type="button" class="btn primary" (click)="updateStatus(r, 'ACCEPTED')">Chấp nhận</button>
-        <button type="button" class="btn danger" (click)="updateStatus(r, 'REJECTED')">Từ chối</button>
-      </div>
-    </article>
+  <!-- Tabs -->
+  <div class="tabs-bar">
+    <button type="button" class="tab-btn" [class.active]="activeTab==='PENDING_RENT'" (click)="setTab('PENDING_RENT')">
+      <span class="material-symbols-outlined">key</span>
+      <span>Chờ duyệt thuê</span>
+      <span class="badge" *ngIf="pendingRentCount > 0">{{ pendingRentCount }}</span>
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab==='PENDING_RETURN'"
+      (click)="setTab('PENDING_RETURN')">
+      <span class="material-symbols-outlined">logout</span>
+      <span>Chờ duyệt trả</span>
+      <span class="badge" *ngIf="pendingReturnCount > 0">{{ pendingReturnCount }}</span>
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab==='PROCESSED'" (click)="setTab('PROCESSED')">
+      <span class="material-symbols-outlined">done_all</span>
+      <span>Đã xử lý</span>
+    </button>
   </div>
 
-  <div class="list" *ngIf="activeTab==='PROCESSED' && processedRequests.length">
-    <article class="card" *ngFor="let r of processedRequests">
-      <div class="row">
-        <div class="left">
-          <div class="k">Phòng</div>
-          <div class="v">{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</div>
-        </div>
-        <div class="right">
-          <span class="chip" [class.done]="isAcceptedStatus(r.status)" [class.danger]="isRejectedStatus(r.status)">{{ getStatusLabel(r.status) }}</span>
+  <!-- Pending Rent Requests -->
+  <div class="requests-list" *ngIf="activeTab==='PENDING_RENT' && pendingRentRequests.length; else emptyRent">
+    <div class="request-card" *ngFor="let r of pendingRentRequests">
+      <div class="request-header">
+        <div class="request-info">
+          <h3>{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</h3>
+          <span class="status-badge pending">
+            <span class="material-symbols-outlined">schedule</span>
+            Chờ duyệt
+          </span>
         </div>
       </div>
-      <div class="meta">{{ r.sentAt || r.sentDate | date:'short' }}</div>
-      <div class="note">{{ r.note }}</div>
-    </article>
-  </div>
-</section>
 
+      <div class="request-meta">
+        <div class="meta-item">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <span>{{ r.sentAt || r.sentDate | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+
+      <div class="request-note" *ngIf="r.note">
+        <span class="material-symbols-outlined">note</span>
+        <p>{{ r.note }}</p>
+      </div>
+
+      <div class="request-actions" *ngIf="isPending(r)">
+        <button type="button" class="action-btn accept" (click)="updateStatus(r, 'ACCEPTED')">
+          <span class="material-symbols-outlined">check_circle</span>
+          <span>Chấp nhận</span>
+        </button>
+        <button type="button" class="action-btn reject" (click)="updateStatus(r, 'REJECTED')">
+          <span class="material-symbols-outlined">cancel</span>
+          <span>Từ chối</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyRent>
+    <div class="empty-state" *ngIf="activeTab==='PENDING_RENT'">
+      <div class="empty-icon">
+        <span class="material-symbols-outlined">inbox</span>
+      </div>
+      <h3>Không có yêu cầu thuê nào</h3>
+      <p>Các yêu cầu thuê phòng mới sẽ hiển thị ở đây</p>
+    </div>
+  </ng-template>
+
+  <!-- Pending Return Requests -->
+  <div class="requests-list" *ngIf="activeTab==='PENDING_RETURN' && pendingReturnRequests.length; else emptyReturn">
+    <div class="request-card" *ngFor="let r of pendingReturnRequests">
+      <div class="request-header">
+        <div class="request-info">
+          <h3>{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</h3>
+          <span class="status-badge pending">
+            <span class="material-symbols-outlined">schedule</span>
+            Chờ duyệt
+          </span>
+        </div>
+      </div>
+
+      <div class="request-meta">
+        <div class="meta-item">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <span>{{ r.sentAt || r.sentDate | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+
+      <div class="request-note" *ngIf="r.note">
+        <span class="material-symbols-outlined">note</span>
+        <p>{{ r.note }}</p>
+      </div>
+
+      <div class="request-actions" *ngIf="isPending(r)">
+        <button type="button" class="action-btn accept" (click)="updateStatus(r, 'ACCEPTED')">
+          <span class="material-symbols-outlined">check_circle</span>
+          <span>Chấp nhận</span>
+        </button>
+        <button type="button" class="action-btn reject" (click)="updateStatus(r, 'REJECTED')">
+          <span class="material-symbols-outlined">cancel</span>
+          <span>Từ chối</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyReturn>
+    <div class="empty-state" *ngIf="activeTab==='PENDING_RETURN'">
+      <div class="empty-icon">
+        <span class="material-symbols-outlined">inbox</span>
+      </div>
+      <h3>Không có yêu cầu trả phòng nào</h3>
+      <p>Các yêu cầu trả phòng sẽ hiển thị ở đây</p>
+    </div>
+  </ng-template>
+
+  <!-- Processed Requests -->
+  <div class="requests-list" *ngIf="activeTab==='PROCESSED' && processedRequests.length; else emptyProcessed">
+    <div class="request-card processed" *ngFor="let r of processedRequests">
+      <div class="request-header">
+        <div class="request-info">
+          <h3>{{ r.hostelName ? (r.hostelName + ' - ') : '' }}{{ r.roomTitle || ('#' + r.roomId) }}</h3>
+          <span class="status-badge" [ngClass]="{
+            'accepted': isAcceptedStatus(r.status),
+            'rejected': isRejectedStatus(r.status)
+          }">
+            <span class="material-symbols-outlined">
+              {{ isAcceptedStatus(r.status) ? 'check_circle' : 'cancel' }}
+            </span>
+            {{ getStatusLabel(r.status) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="request-meta">
+        <div class="meta-item">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <span>{{ r.sentAt || r.sentDate | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+
+      <div class="request-note" *ngIf="r.note">
+        <span class="material-symbols-outlined">note</span>
+        <p>{{ r.note }}</p>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyProcessed>
+    <div class="empty-state" *ngIf="activeTab==='PROCESSED'">
+      <div class="empty-icon">
+        <span class="material-symbols-outlined">history</span>
+      </div>
+      <h3>Chưa xử lý yêu cầu nào</h3>
+      <p>Các yêu cầu đã xử lý sẽ hiển thị ở đây</p>
+    </div>
+  </ng-template>
+</div>

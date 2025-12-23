@@ -1,39 +1,131 @@
-<div class="auth-card">
-  <h2>Đăng ký</h2>
-  <p class="sub">Tạo tài khoản cho người thuê hoặc chủ trọ.</p>
+<div class="auth-wrapper">
+  <div class="auth-container">
+    <!-- Left Side - Branding -->
+    <div class="auth-brand">
+      <div class="brand-content">
+        <div class="brand-icon">
+          <span class="material-symbols-outlined">how_to_reg</span>
+        </div>
+        <h1>Tham Gia Cùng Chúng Tôi</h1>
+        <p class="brand-tagline">Đăng ký để trải nghiệm quản lý phòng trọ chuyên nghiệp</p>
 
-  <form (ngSubmit)="submit()">
-    <label>Họ tên
-      <input [(ngModel)]="form.fullName" name="fullName" required />
-    </label>
+        <div class="features">
+          <div class="feature-item">
+            <span class="material-symbols-outlined">apartment</span>
+            <span>Quản lý trọ dễ dàng</span>
+          </div>
+          <div class="feature-item">
+            <span class="material-symbols-outlined">payments</span>
+            <span>Thanh toán tiện lợi</span>
+          </div>
+          <div class="feature-item">
+            <span class="material-symbols-outlined">analytics</span>
+            <span>Báo cáo chi tiết</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <label>Email
-      <input [(ngModel)]="form.email" name="email" type="email" required />
-    </label>
+    <!-- Right Side - Register Form -->
+    <div class="auth-form-container">
+      <div class="auth-form-wrapper">
+        <div class="form-header">
+          <h2>Đăng ký tài khoản</h2>
+          <p class="form-subtitle">Tạo tài khoản mới để bắt đầu sử dụng dịch vụ</p>
+        </div>
 
-    <label>Số điện thoại
-      <input [(ngModel)]="form.phone" name="phone" required />
-    </label>
+        <form (ngSubmit)="submit()" class="auth-form">
+          <div class="form-group">
+            <label for="fullName">
+              <span class="material-symbols-outlined">badge</span>
+              <span>Họ và tên</span>
+            </label>
+            <input id="fullName" [(ngModel)]="form.fullName" name="fullName" type="text"
+              placeholder="Nhập họ và tên đầy đủ" required />
+          </div>
 
-    <label>Mật khẩu
-      <input [(ngModel)]="form.password" name="password" type="password" required />
-    </label>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">
+                <span class="material-symbols-outlined">mail</span>
+                <span>Email</span>
+              </label>
+              <input id="email" [(ngModel)]="form.email" name="email" type="email" placeholder="example@email.com"
+                required />
+            </div>
 
-    <label>Vai trò
-      <select [(ngModel)]="form.role" name="role">
-        <option value="renter">Người thuê</option>
-        <option value="owner">Chủ trọ</option>
-      </select>
-    </label>
+            <div class="form-group">
+              <label for="phone">
+                <span class="material-symbols-outlined">phone</span>
+                <span>Số điện thoại</span>
+              </label>
+              <input id="phone" [(ngModel)]="form.phone" name="phone" type="tel" placeholder="0123456789" required />
+            </div>
+          </div>
 
-    <button type="submit" [disabled]="loading">Đăng ký</button>
-  </form>
+          <div class="form-group">
+            <label for="password">
+              <span class="material-symbols-outlined">lock</span>
+              <span>Mật khẩu</span>
+            </label>
+            <input id="password" [(ngModel)]="form.password" name="password" type="password"
+              placeholder="Tối thiểu 6 ký tự" required />
+          </div>
 
-  <p class="message" [class.error]="message && !message.startsWith('Đăng')">{{ message }}</p>
+          <div class="form-group">
+            <label for="role">
+              <span class="material-symbols-outlined">admin_panel_settings</span>
+              <span>Vai trò</span>
+            </label>
+            <div class="role-selector">
+              <label class="role-option" [class.selected]="form.role === 'renter'">
+                <input type="radio" [(ngModel)]="form.role" name="role" value="renter" />
+                <div class="role-card">
+                  <span class="material-symbols-outlined">person</span>
+                  <span class="role-title">Người thuê</span>
+                  <span class="role-desc">Tìm và thuê phòng trọ</span>
+                </div>
+              </label>
 
-  <p class="hint">
-    Đã có tài khoản?
-    <a routerLink="/auth/login">Đăng nhập</a>
-  </p>
+              <label class="role-option" [class.selected]="form.role === 'owner'">
+                <input type="radio" [(ngModel)]="form.role" name="role" value="owner" />
+                <div class="role-card">
+                  <span class="material-symbols-outlined">real_estate_agent</span>
+                  <span class="role-title">Chủ trọ</span>
+                  <span class="role-desc">Quản lý và cho thuê phòng</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" [disabled]="loading">
+            <span *ngIf="!loading">Đăng ký</span>
+            <span *ngIf="loading" class="loading-spinner">
+              <span class="spinner"></span>
+              <span>Đang xử lý...</span>
+            </span>
+          </button>
+
+          <div class="message-container" *ngIf="message">
+            <div class="message" [class.error]="message && !message.startsWith('Đăng')">
+              <span class="material-symbols-outlined">
+                {{ message.startsWith('Đăng') ? 'check_circle' : 'error' }}
+              </span>
+              <span>{{ message }}</span>
+            </div>
+          </div>
+        </form>
+
+        <div class="auth-footer">
+          <p>
+            Đã có tài khoản?
+            <a routerLink="/auth/login" class="login-link">
+              Đăng nhập ngay
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-

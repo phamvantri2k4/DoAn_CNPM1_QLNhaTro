@@ -126,22 +126,52 @@ public class RoomsController : ControllerBase
         return CreatedAtAction(nameof(GetRoom), new { id = room.Id }, room);
     }
 
+    public class UpdateRoomRequest
+    {
+        public string Title { get; set; } = string.Empty;
+        public double? Area { get; set; }
+        public decimal Price { get; set; }
+        public decimal Deposit { get; set; }
+        public string? UtilitiesDescription { get; set; }
+        public string? Status { get; set; }
+    }
+
     [HttpPut("{id:int}")]
     [Authorize(Roles = "owner,admin")]
-    public async Task<IActionResult> UpdateRoom(int id, [FromBody] Room update)
+    public async Task<IActionResult> UpdateRoom(int id, [FromBody] UpdateRoomRequest update)
     {
-        var room = await _db.Rooms.FindAsync(id);
-        if (room == null) return NotFound();
+        if (update == null) return BadRequest(new { message = "Dữ liệu không hợp lệ" });
+        if (string.IsNullOrWhiteSpace(update.Title)) return BadRequest(new { message = "Vui lòng nhập tên phòng" });
 
+        var room = await _db.Rooms.FindAsync(id);
+        if (room == null) return NotFound(new { message = "Không tìm thấy phòng" });
+
+        // Kiểm tra quyền sở hữu
+        var isOwner = User.IsInRole("owner");
+        var isAdmin = User.IsInRole("admin");
+
+        if (isOwner)
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+            if (!int.TryParse(userIdClaim, out var ownerUserId)) return Unauthorized();
+            if (room.OwnerId != ownerUserId) return Forbid();
+        }
+
+        // Cập nhật các trường
         room.Title = update.Title;
         room.Area = update.Area;
         room.Price = update.Price;
         room.Deposit = update.Deposit;
         room.UtilitiesDescription = update.UtilitiesDescription;
-        room.Status = update.Status ?? room.Status;
+        
+        // Chỉ cập nhật status nếu có giá trị
+        if (!string.IsNullOrWhiteSpace(update.Status))
+        {
+            room.Status = NormalizeRoomStatus(update.Status);
+        }
 
         await _db.SaveChangesAsync();
-        return NoContent();
+        return Ok(new { message = "Đã cập nhật phòng thành công" });
     }
 
     [HttpDelete("{id:int}")]

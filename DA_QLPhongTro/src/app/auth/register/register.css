@@ -1,2 +1,95 @@
+/* Import shared auth styles */
 @import '../login/login.css';
 
+/* Additional Register-specific styles */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Role Selector */
+.role-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.role-option {
+    cursor: pointer;
+    position: relative;
+}
+
+.role-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.role-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    background: #f9fafb;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.role-card .material-symbols-outlined {
+    font-size: 2.5rem;
+    color: #9ca3af;
+    transition: color 0.3s ease;
+}
+
+.role-title {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9375rem;
+}
+
+.role-desc {
+    font-size: 0.8125rem;
+    color: #6b7280;
+}
+
+.role-option:hover .role-card {
+    border-color: #d1d5db;
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.role-option.selected .role-card {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.role-option.selected .role-card .material-symbols-outlined {
+    color: #667eea;
+}
+
+.role-option.selected .role-title {
+    color: #667eea;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .role-selector {
+        grid-template-columns: 1fr;
+    }
+
+    .role-card {
+        padding: 1rem;
+    }
+}

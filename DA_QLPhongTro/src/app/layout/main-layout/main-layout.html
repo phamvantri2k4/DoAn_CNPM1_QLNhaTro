@@ -1,46 +1,76 @@
 <div class="page">
   <header class="header">
     <div class="brand">
+      <span class="material-symbols-outlined brand-icon">home</span>
       <a routerLink="/">QL Phòng Trọ</a>
     </div>
+
     <nav class="nav">
-      <a routerLink="/home" routerLinkActive="active">Trang chủ</a>
+      <a routerLink="/home" routerLinkActive="active">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span>Trang chủ</span>
+      </a>
 
       <!-- Người thuê -->
-      <a *ngIf="hasRole('renter')" routerLink="/renter/rental-history" routerLinkActive="active">Lịch sử thuê</a>
+      <a *ngIf="hasRole('renter')" routerLink="/renter/rental-history" routerLinkActive="active">
+        <span class="material-symbols-outlined">history</span>
+        <span>Lịch sử thuê</span>
+      </a>
 
       <!-- Chủ trọ -->
-      <a *ngIf="hasRole('owner')" routerLink="/host/hostels" routerLinkActive="active">Quản lý trọ</a>
-      <a *ngIf="hasRole('owner')" routerLink="/host/listings" routerLinkActive="active">Bài đăng</a>
-      <a *ngIf="hasRole('owner')" routerLink="/host/rental-requests" routerLinkActive="active">
-        Yêu cầu thuê/trả
+      <a *ngIf="hasRole('owner')" routerLink="/host/hostels" routerLinkActive="active">
+        <span class="material-symbols-outlined">apartment</span>
+        <span>Quản lý trọ</span>
+      </a>
+      <a *ngIf="hasRole('owner')" routerLink="/host/listings" routerLinkActive="active">
+        <span class="material-symbols-outlined">description</span>
+        <span>Bài đăng</span>
+      </a>
+      <a *ngIf="hasRole('owner')" routerLink="/host/rental-requests" routerLinkActive="active"
+        class="nav-item-with-badge">
+        <span class="material-symbols-outlined">mark_email_unread</span>
+        <span>Yêu cầu thuê/trả</span>
         <span class="badge" *ngIf="pendingRequestCount > 0">{{ pendingRequestCount }}</span>
       </a>
 
       <!-- Quản trị viên -->
-      <a *ngIf="hasRole('admin')" routerLink="/admin/dashboard" routerLinkActive="active">Tổng quan</a>
-      <a *ngIf="hasRole('admin')" routerLink="/admin/users" routerLinkActive="active">Người dùng</a>
+      <a *ngIf="hasRole('admin')" routerLink="/admin/dashboard" routerLinkActive="active">
+        <span class="material-symbols-outlined">analytics</span>
+        <span>Tổng quan</span>
+      </a>
+      <a *ngIf="hasRole('admin')" routerLink="/admin/users" routerLinkActive="active">
+        <span class="material-symbols-outlined">group</span>
+        <span>Người dùng</span>
+      </a>
     </nav>
+
     <div class="auth">
       <ng-container *ngIf="user$ | async as user; else guest">
         <a routerLink="/profile" class="user-pill">
-          <img class="user-avatar" *ngIf="getUserAvatarSrc(user); else userIcon" [src]="getUserAvatarSrc(user)" alt="Avatar" />
+          <img class="user-avatar" *ngIf="getUserAvatarSrc(user); else userIcon" [src]="getUserAvatarSrc(user)"
+            alt="Avatar" />
           <ng-template #userIcon>
-            <span class="user-avatar placeholder" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 12a4.5 4.5 0 1 0-4.5-4.5A4.5 4.5 0 0 0 12 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M4 20a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+            <span class="user-avatar placeholder">
+              <span class="material-symbols-outlined">account_circle</span>
             </span>
           </ng-template>
           <span class="user-name">{{ user.fullName }}</span>
         </a>
-        <button class="link-btn" type="button" (click)="logout()">Đăng xuất</button>
+        <button class="link-btn logout-btn" type="button" (click)="logout()">
+          <span class="material-symbols-outlined">logout</span>
+          <span>Đăng xuất</span>
+        </button>
       </ng-container>
 
       <ng-template #guest>
-        <a routerLink="/auth/login" class="link-btn">Đăng nhập</a>
-        <a routerLink="/auth/register" class="link-btn secondary">Đăng ký</a>
+        <a routerLink="/auth/login" class="link-btn">
+          <span class="material-symbols-outlined">login</span>
+          <span>Đăng nhập</span>
+        </a>
+        <a routerLink="/auth/register" class="link-btn secondary">
+          <span class="material-symbols-outlined">person_add</span>
+          <span>Đăng ký</span>
+        </a>
       </ng-template>
     </div>
   </header>
@@ -52,6 +82,15 @@
   <app-dialog-host></app-dialog-host>
 
   <footer class="footer">
-    <span> 2025 - Quản lý phòng Trọ</span>
+    <div class="footer-content">
+      <span class="footer-text">© 2025 - Quản lý phòng Trọ</span>
+      <div class="footer-links">
+        <a href="#" class="footer-link">Điều khoản</a>
+        <span class="footer-divider">•</span>
+        <a href="#" class="footer-link">Chính sách</a>
+        <span class="footer-divider">•</span>
+        <a href="#" class="footer-link">Liên hệ</a>
+      </div>
+    </div>
   </footer>
 </div>

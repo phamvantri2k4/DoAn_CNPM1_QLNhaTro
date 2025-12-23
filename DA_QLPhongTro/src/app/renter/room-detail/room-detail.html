@@ -1,92 +1,147 @@
-<div *ngIf="room" class="layout page-section">
-  <section class="info">
-    <h2>{{ room.title }}</h2>
-    <div class="info-grid">
-      <div class="kv">
-        <div class="k">Diện tích</div>
-        <div class="v">{{ room.area }} m²</div>
+<div class="detail-page">
+  <!-- Back Button -->
+  <div class="back-bar">
+    <button type="button" onclick="history.back()" class="btn-back">
+      <span class="material-symbols-outlined">arrow_back</span>
+      <span>Quay lại</span>
+    </button>
+  </div>
+
+  <div *ngIf="room" class="detail-content">
+    <!-- Room Header -->
+    <div class="room-header-section">
+      <div class="room-icon-large">
+        <span class="material-symbols-outlined">door_open</span>
       </div>
-      <div class="kv">
-        <div class="k">Giá thuê</div>
-        <div class="v">{{ room.price | number:'1.0-0' }} đ</div>
-      </div>
-      <div class="kv">
-        <div class="k">Tiền cọc</div>
-        <div class="v">{{ room.deposit | number:'1.0-0' }} đ</div>
-      </div>
-      <div class="kv">
-        <div class="k">Trạng thái</div>
-        <div class="v status">{{ room.status }}</div>
+      <div class="room-title-info">
+        <h1>{{ room.title }}</h1>
+        <span class="status-badge-large" [ngClass]="{
+          'available': room.status === 'Còn trống',
+          'rented': room.status === 'Đang thuê'
+        }">
+          {{ room.status }}
+        </span>
       </div>
     </div>
 
-    <div class="utilities">
-      <div class="k">Mô tả tiện ích</div>
-      <div class="v">{{ room.utilitiesDescription || 'Không có thông tin' }}</div>
-    </div>
-  </section>
-
-  <section class="actions" *ngIf="isOwner">
-    <div class="actions-head">
-      <h3 class="actions-title">Người thuê hiện tại</h3>
-      <p class="actions-sub" *ngIf="(room.status || '') !== 'Đang thuê'">Phòng đang trống.</p>
-    </div>
-
-    <div class="current-renter" *ngIf="(room.status || '') === 'Đang thuê' && currentRentalInfo">
-      <div class="contact-line"><b>{{ currentRentalInfo.renterFullName || '(Chưa có tên)' }}</b></div>
-      <div class="contact-line" *ngIf="currentRentalInfo.renterPhone">SĐT: {{ currentRentalInfo.renterPhone }}</div>
-      <div class="contact-line" *ngIf="currentRentalInfo.renterEmail">Email: {{ currentRentalInfo.renterEmail }}</div>
-      <div class="contact-line" *ngIf="currentRentalInfo.startDate">Từ ngày: {{ currentRentalInfo.startDate | date:'shortDate' }}</div>
-    </div>
-  </section>
-
-  <section class="actions" *ngIf="loggedIn && !canSendRequest">
-    <div class="actions-head">
-      <h3 class="actions-title">Gửi yêu cầu</h3>
-      <p class="actions-sub">Chỉ tài khoản người thuê (renter) mới gửi được yêu cầu thuê.</p>
-    </div>
-  </section>
-
-  <section class="actions" *ngIf="loggedIn && canSendRequest">
-    <div class="actions-head">
-      <h3 class="actions-title">Gửi yêu cầu</h3>
-      <p class="actions-sub">Thông tin sẽ được gửi đến chủ trọ để xử lý.</p>
-    </div>
-    <div class="actions-foot" *ngIf="!showRequestForm">
-      <button type="button" class="btn primary" (click)="openRequestForm()">Gửi yêu cầu thuê</button>
-    </div>
-
-    <div class="request-form" *ngIf="showRequestForm">
-      <div class="form-grid">
-        <div class="field">
-          <span class="field-label">Loại yêu cầu</span>
-          <div class="field-control">Thuê phòng</div>
+    <!-- Room Info Grid -->
+    <div class="info-cards">
+      <div class="info-card">
+        <span class="material-symbols-outlined">square_foot</span>
+        <div class="info-content">
+          <div class="info-label">Diện tích</div>
+          <div class="info-value">{{ room.area }} m²</div>
         </div>
+      </div>
 
-        <div class="field">
-          <span class="field-label">Liên hệ</span>
-          <div class="field-control contact">
-            <div class="contact-line"><b>{{ currentUser?.fullName || '(Chưa có tên)' }}</b></div>
-            <div class="contact-line" *ngIf="currentUser?.phone">SĐT: {{ currentUser?.phone }}</div>
-            <div class="contact-line" *ngIf="currentUser?.email">Email: {{ currentUser?.email }}</div>
+      <div class="info-card">
+        <span class="material-symbols-outlined">payments</span>
+        <div class="info-content">
+          <div class="info-label">Giá thuê</div>
+          <div class="info-value">{{ room.price | number:'1.0-0' }}₫</div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <span class="material-symbols-outlined">account_balance_wallet</span>
+        <div class="info-content">
+          <div class="info-label">Tiền cọc</div>
+          <div class="info-value">{{ room.deposit | number:'1.0-0' }}₫</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Utilities -->
+    <div class="detail-section" *ngIf="room.utilitiesDescription">
+      <h3>
+        <span class="material-symbols-outlined">checklist</span>
+        Tiện ích
+      </h3>
+      <p>{{ room.utilitiesDescription }}</p>
+    </div>
+
+    <!-- Current Renter Info -->
+    <div class="detail-section" *ngIf="isOwner && currentRentalInfo">
+      <h3>
+        <span class="material-symbols-outlined">person</span>
+        Người thuê hiện tại
+      </h3>
+      <div class="renter-info-card">
+        <div class="renter-detail">
+          <span class="material-symbols-outlined">account_circle</span>
+          <div>
+            <div class="renter-name">{{ currentRentalInfo.renterFullName || 'Chưa có tên' }}</div>
+          </div>
+        </div>
+        <div class="renter-detail" *ngIf="currentRentalInfo.renterPhone">
+          <span class="material-symbols-outlined">phone</span>
+          <div>{{ currentRentalInfo.renterPhone }}</div>
+        </div>
+        <div class="renter-detail" *ngIf="currentRentalInfo.renterEmail">
+          <span class="material-symbols-outlined">mail</span>
+          <div>{{ currentRentalInfo.renterEmail }}</div>
+        </div>
+        <div class="renter-detail" *ngIf="currentRentalInfo.startDate">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <div>Từ ngày: {{ currentRentalInfo.startDate | date:'dd/MM/yyyy' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State for Owner -->
+    <div class="detail-section" *ngIf="isOwner && !currentRentalInfo && room.status === 'Còn trống'">
+      <h3>
+        <span class="material-symbols-outlined">person_off</span>
+        Người thuê
+      </h3>
+      <div class="empty-message">
+        <span class="material-symbols-outlined">info</span>
+        <span>Phòng đang trống</span>
+      </div>
+    </div>
+
+    <!-- Actions for Renter -->
+    <div class="detail-section" *ngIf="loggedIn && canSendRequest && !showRequestForm">
+      <button type="button" class="btn-primary-gradient-large" (click)="openRequestForm()">
+        <span class="material-symbols-outlined">send</span>
+        <span>Gửi yêu cầu thuê phòng</span>
+      </button>
+    </div>
+
+    <!-- Request Form -->
+    <div class="detail-section" *ngIf="showRequestForm">
+      <h3>
+        <span class="material-symbols-outlined">description</span>
+        Gửi yêu cầu thuê
+      </h3>
+      <div class="request-form">
+        <div class="form-group">
+          <label>Thông tin liên hệ</label>
+          <div class="contact-info">
+            <div><strong>{{ currentUser?.fullName || 'Chưa có tên' }}</strong></div>
+            <div *ngIf="currentUser?.phone">SĐT: {{ currentUser?.phone }}</div>
+            <div *ngIf="currentUser?.email">Email: {{ currentUser?.email }}</div>
           </div>
         </div>
 
-        <label class="field field-full">
-          <span class="field-label">Ghi chú</span>
-          <textarea class="field-control" [(ngModel)]="request.note" rows="3"
-            placeholder="Ví dụ: thời gian muốn dọn vào, số người ở, nhu cầu xem phòng..."></textarea>
-        </label>
-      </div>
+        <div class="form-group">
+          <label>Ghi chú</label>
+          <textarea [(ngModel)]="request.note" rows="4"
+            placeholder="Ví dụ: thời gian muốn dọn vào, số người ở..."></textarea>
+        </div>
 
-      <div class="actions-foot form-actions">
-        <button type="button" class="btn secondary" [disabled]="sendingRequest" (click)="closeRequestForm()">Hủy</button>
-        <button type="button" class="btn primary" [disabled]="sendingRequest" (click)="sendRequest()">
-          {{ sendingRequest ? 'Đang gửi...' : 'Gửi yêu cầu' }}
-        </button>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" [disabled]="sendingRequest" (click)="closeRequestForm()">
+            Hủy
+          </button>
+          <button type="button" class="btn-primary" [disabled]="sendingRequest" (click)="sendRequest()">
+            <span *ngIf="!sendingRequest">Gửi yêu cầu</span>
+            <span *ngIf="sendingRequest">Đang gửi...</span>
+          </button>
+        </div>
       </div>
     </div>
-  </section>
-</div>
+  </div>
 
-<p class="message">{{ message }}</p>
+  <p class="message" *ngIf="message">{{ message }}</p>
+</div>

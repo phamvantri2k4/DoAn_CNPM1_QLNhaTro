@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DA_QLPhongTro_Server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4eaba1fcbf6b3c6bd3f5f66934b0a06409fe8b05")]
 [assembly: System.Reflection.AssemblyProductAttribute("DA_QLPhongTro_Server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DA_QLPhongTro_Server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

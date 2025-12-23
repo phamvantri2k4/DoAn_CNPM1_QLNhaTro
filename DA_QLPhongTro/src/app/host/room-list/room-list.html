@@ -1,73 +1,102 @@
-<div class="page-shell">
-  <div class="toolbar">
-    <div class="toolbar-left">
-      <div class="filters">
-        <span></span>
+<div class="host-page">
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-title">
+        <span class="material-symbols-outlined">meeting_room</span>
+        <h1>Danh Sách Phòng</h1>
       </div>
-      <div class="stats" *ngIf="!loading">
-        <span>Có phòng {{ rooms.length }}</span>
-        <span *ngIf="currentHostelId"> | Trong trọ #{{ currentHostelId }}</span>
+      <div class="header-badge" *ngIf="currentHostelId && !loading">
+        <span class="material-symbols-outlined">filter_alt</span>
+        <span>Đang lọc theo trọ</span>
       </div>
     </div>
-
-    <div class="toolbar-right">
-      <a routerLink="/host/hostels" class="btn secondary">Quay về trọ</a>
-      <a
-        routerLink="/host/rooms/create"
-        class="btn success"
-        [queryParams]="currentHostelId ? { hostelId: currentHostelId } : null"
-        >Thêm phòng</a
-      >
-    </div>
+    <a *ngIf="currentHostelId" [routerLink]="['/host/rooms/create']" [queryParams]="{ hostelId: currentHostelId }"
+      class="btn-add">
+      <span class="material-symbols-outlined">add</span>
+      <span>Thêm phòng</span>
+    </a>
   </div>
 
-  <div *ngIf="message" class="message">{{ message }}</div>
-  <div *ngIf="loading" class="loading">Đang tải danh sách phòng...</div>
+  <div *ngIf="message" class="message-alert">
+    <span class="material-symbols-outlined">info</span>
+    <span>{{ message }}</span>
+  </div>
 
-  <div class="card-grid" *ngIf="!loading && rooms.length; else emptyRooms">
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner-large"></div>
+    <p>Đang tải...</p>
+  </div>
+
+  <div class="rooms-grid" *ngIf="!loading && rooms.length; else emptyState">
     <div class="room-card" *ngFor="let r of rooms">
-      <div class="room-header">
-        <div class="room-title">
-          <div class="room-name">{{ r.title }}</div>
-          <div class="room-sub">Diện tích: {{ r.area }} m²</div>
+      <!-- Room Icon -->
+      <div class="room-icon">
+        <span class="material-symbols-outlined">door_open</span>
+      </div>
+
+      <!-- Room Info -->
+      <div class="room-content">
+        <div class="room-header">
+          <div class="room-title-section">
+            <h3 class="room-name">{{ r.title }}</h3>
+            <span class="status-badge" [ngClass]="{
+              'active': r.status === 'Còn trống',
+              'rented': r.status === 'Đang thuê'
+            }">
+              {{ r.status }}
+            </span>
+          </div>
         </div>
-        <span class="status-pill">{{ r.status || 'Đang trống' }}</span>
+
+        <div class="room-meta">
+          <div class="meta-item" *ngIf="r.area">
+            <span class="material-symbols-outlined">square_foot</span>
+            <span>{{ r.area }}m²</span>
+          </div>
+          <div class="meta-item">
+            <span class="material-symbols-outlined">payments</span>
+            <span>{{ r.price | number:'1.0-0' }}₫</span>
+          </div>
+          <div class="meta-item">
+            <span class="material-symbols-outlined">account_balance_wallet</span>
+            <span>Cọc: {{ r.deposit | number:'1.0-0' }}₫</span>
+          </div>
+        </div>
+
+        <div *ngIf="getCurrentRenter(r) as renter" class="renter-badge">
+          <span class="material-symbols-outlined">person</span>
+          <span>{{ renter.renterFullName }}</span>
+        </div>
       </div>
 
-      <div class="room-meta-row">
-        <span class="meta-item">Giá: <b>{{ r.price | number: '1.0-0' }} đ / tháng</b></span>
-      </div>
-
-      <div class="current-renter" *ngIf="(r.status || '') === 'Đang thuê' && getCurrentRenter(r)">
-        <div class="cr-title">Người thuê hiện tại</div>
-        <div class="cr-line"><b>Họ tên:</b> {{ getCurrentRenter(r)?.renterFullName }}</div>
-        <div class="cr-line"><b>SĐT:</b> {{ getCurrentRenter(r)?.renterPhone }}</div>
-        <div class="cr-line"><b>Email:</b> {{ getCurrentRenter(r)?.renterEmail }}</div>
-        <div class="cr-line"><b>Từ ngày:</b> {{ getCurrentRenter(r)?.startDate | date:'shortDate' }}</div>
-      </div>
-
+      <!-- Room Actions - 3 buttons -->
       <div class="room-actions">
-        <a
-          class="action-btn info"
-          [routerLink]="['/rooms', r.id || r.roomId]"
-          >Chi tiết</a
-        >
-        <a
-          class="action-btn secondary"
-          [routerLink]="['/host/rooms', r.id || r.roomId, 'edit']"
-          >Sửa</a
-        >
-        <button class="action-btn danger" type="button" (click)="delete(r)">
-          Xóa
+        <a [routerLink]="['/rooms', (r.id ?? r.roomId)]" class="action-btn detail">
+          <span class="material-symbols-outlined">info</span>
+        </a>
+        <a [routerLink]="['/host/rooms', (r.id ?? r.roomId), 'edit']" class="action-btn primary">
+          <span class="material-symbols-outlined">edit</span>
+        </a>
+        <button type="button" (click)="delete(r)" class="action-btn danger">
+          <span class="material-symbols-outlined">delete</span>
         </button>
       </div>
     </div>
   </div>
 
-  <ng-template #emptyRooms>
-    <div class="empty" *ngIf="!loading">
-      <div class="empty-title">Chưa có phòng nào trong trọ này</div>
-      <div class="empty-sub">Bấm "Thêm phòng" để tạo phòng đầu tiên.</div>
+  <ng-template #emptyState>
+    <div class="empty-state" *ngIf="!loading">
+      <div class="empty-icon">
+        <span class="material-symbols-outlined">meeting_room</span>
+      </div>
+      <h3>Chưa có phòng nào</h3>
+      <p *ngIf="currentHostelId">Thêm phòng mới cho trọ này</p>
+      <p *ngIf="!currentHostelId">Vui lòng chọn một trọ để xem danh sách phòng</p>
+      <a *ngIf="currentHostelId" [routerLink]="['/host/rooms/create']" [queryParams]="{ hostelId: currentHostelId }"
+        class="btn-primary-gradient">
+        <span class="material-symbols-outlined">add</span>
+        <span>Thêm phòng</span>
+      </a>
     </div>
   </ng-template>
 </div>

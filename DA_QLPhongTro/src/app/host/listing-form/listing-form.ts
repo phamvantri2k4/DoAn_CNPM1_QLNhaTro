@@ -67,6 +67,22 @@ export class HostListingFormComponent {
           this.form = res;
           this.images = res?.images && res.images.length ? [...res.images] : [];
           this.form.imagesJson = this.images.length ? JSON.stringify(this.images) : undefined;
+          
+          // Nếu có roomId, load thông tin phòng để lấy hostelId
+          if (this.form.roomId) {
+            this.roomService.getById(this.form.roomId).subscribe({
+              next: (room) => {
+                if (room.hostelId) {
+                  this.selectedHostelId = room.hostelId;
+                  // Load danh sách phòng của trọ đó
+                  this.onHostelChange();
+                }
+              },
+              error: () => {
+                console.error('Không tải được thông tin phòng');
+              }
+            });
+          }
         },
         error: () => this.message = 'Không tải được bài đăng'
       });

@@ -67,7 +67,10 @@ export class HostRoomFormComponent {
       this.roomService.update(Number(id), this.form).subscribe({
         next: () => {
           this.message = 'Đã cập nhật phòng';
-          this.router.navigate(['/host/rooms']);
+          // Giữ lại hostelId query param để lọc đúng danh sách phòng
+          this.router.navigate(['/host/rooms'], {
+            queryParams: this.form.hostelId ? { hostelId: this.form.hostelId } : undefined
+          });
         },
         error: () => (this.message = 'Cập nhật thất bại')
       });
