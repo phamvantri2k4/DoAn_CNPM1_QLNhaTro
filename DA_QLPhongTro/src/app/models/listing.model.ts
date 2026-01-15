@@ -24,4 +24,12 @@ export interface Listing {
   ownerFullName?: string;
   ownerPhone?: string;
   ownerEmail?: string;
+
+  // Thông tin phòng và trọ cho trang quản lý
+  roomTitle?: string;
+  roomPrice?: number;
+  roomArea?: number;
+  hostelId?: number;
+  hostelName?: string;
+  hostelAddress?: string;
 }

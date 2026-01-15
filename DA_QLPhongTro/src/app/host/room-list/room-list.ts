@@ -7,6 +7,7 @@ import { RoomService } from '../../services/room.service';
 import { RentalInfoService } from '../../services/rental-info.service';
 import { CurrentRentalInfo } from '../../models/current-rental-info.model';
 import { forkJoin, of, catchError, map } from 'rxjs';
+import { DialogService } from '../../components/dialog/dialog.service';
 
 @Component({
   selector: 'app-host-room-list',
@@ -39,7 +40,8 @@ export class HostRoomListComponent {
     private auth: AuthService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
-    private rentalInfoService: RentalInfoService
+    private rentalInfoService: RentalInfoService,
+    private dialog: DialogService
   ) {}
 
   ngOnInit(): void {
@@ -97,13 +99,20 @@ export class HostRoomListComponent {
   delete(room: Room): void {
     const id = room.id || room.roomId;
     if (!id) return;
-    if (!confirm('Xóa phòng này?')) return;
-    this.roomService.delete(id).subscribe({
-      next: () => {
-        this.message = 'Đã xóa phòng';
-        this.fetch();
-      },
-      error: () => (this.message = 'Xóa thất bại')
+    
+    this.dialog.confirm('Bạn có chắc muốn xóa phòng này?', {
+      title: 'Xác nhận xóa phòng',
+      confirmText: 'Xóa',
+      cancelText: 'Hủy',
+      onConfirm: () => {
+        this.roomService.delete(id).subscribe({
+          next: () => {
+            this.fetch();
+            this.dialog.success('Đã xóa phòng');
+          },
+          error: () => this.dialog.error('Xóa thất bại')
+        });
+      }
     });
   }
 }

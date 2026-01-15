@@ -53,16 +53,19 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterRequest request)
     {
+        // Check if username or email already exists
         var existing = await _db.Users
             .Include(u => u.Account)
-            .FirstOrDefaultAsync(u => u.Email == request.Email || u.Account.Username == request.Email);
+            .FirstOrDefaultAsync(u => 
+                u.Email == request.Email || 
+                u.Account.Username == request.Username);
 
         if (existing != null)
         {
             return BadRequest(new AuthResponseDto
             {
                 Success = false,
-                Message = "Email đã được sử dụng"
+                Message = "Email hoặc tên đăng nhập đã được sử dụng"
             });
         }
 
@@ -70,7 +73,7 @@ public class AuthController : ControllerBase
 
         var account = new Account
         {
-            Username = request.Email,
+            Username = request.Username,
             PasswordHash = _passwordService.HashPassword(request.Password),
             Role = role,
             Status = "ACTIVE"

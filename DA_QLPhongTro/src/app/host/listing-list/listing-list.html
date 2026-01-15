@@ -8,43 +8,73 @@
         </div>
 
         <div class="toolbar-right">
+            <select [(ngModel)]="selectedHostelId" (change)="onHostelFilterChange()" class="filter-select">
+                <option [ngValue]="null">🏢 Tất cả trọ</option>
+                <option *ngFor="let hostel of hostels" [ngValue]="hostel.id || hostel.hostelId">
+                    {{ hostel.name }}
+                </option>
+            </select>
             <a routerLink="/host/listings/create" class="btn success">✨ Đăng bài mới</a>
         </div>
     </div>
 
     <div *ngIf="message" class="message">{{ message }}</div>
 
-    <div class="card-grid" *ngIf="listings.length; else emptyState">
-        <div class="listing-card" *ngFor="let listing of listings">
-            <div class="listing-header">
-                <div class="listing-title">
-                    <div class="listing-name">{{ listing.title }}</div>
-                    <div class="listing-sub">Phòng ID: {{ listing.roomId }}</div>
-                </div>
-                <span class="status-pill" [class.hidden]="listing.status === 'HIDDEN'">
-                    {{ listing.status === 'VISIBLE' ? '👁️ Hiển thị' : '🔒 Ẩn' }}
+    <div class="card-grid" *ngIf="filteredListings.length; else emptyState">
+        <div class="listing-card" *ngFor="let listing of filteredListings">
+            <!-- Ảnh preview -->
+            <div class="listing-image" *ngIf="getFirstImage(listing)">
+                <img [src]="getFirstImage(listing)" [alt]="listing.title" />
+                <span class="image-count" *ngIf="getImageCount(listing) > 1">
+                    🖼️ {{ getImageCount(listing) }} ảnh
                 </span>
             </div>
 
-            <div class="listing-description" *ngIf="listing.description">
-                {{ listing.description }}
-            </div>
+            <div class="listing-content">
+                <!-- Header với trạng thái -->
+                <div class="listing-header">
+                    <div class="listing-title">
+                        <div class="listing-name">{{ listing.title }}</div>
+                        <div class="listing-location">
+                            <span class="hostel-badge">🏢 {{ listing.hostelName || 'Không rõ trọ' }}</span>
+                            <span class="room-badge">🚪 {{ listing.roomTitle || 'Phòng #' + listing.roomId }}</span>
+                        </div>
+                    </div>
+                    <span class="status-pill" [class.hidden]="listing.status === 'HIDDEN'">
+                        {{ listing.status === 'VISIBLE' ? '👁️ Hiển thị' : '🔒 Ẩn' }}
+                    </span>
+                </div>
 
-            <div class="listing-meta-row">
-                <span class="meta-item">📅 Đăng: {{ listing.createdAt | date:'dd/MM/yyyy' }}</span>
-            </div>
+                <!-- Thông tin chi tiết -->
+                <div class="listing-description" *ngIf="listing.description">
+                    {{ listing.description }}
+                </div>
 
-            <div class="listing-actions">
-                <button class="action-btn primary" (click)="toggleStatus(listing.id, listing.status || 'VISIBLE')"
-                    title="{{ listing.status === 'VISIBLE' ? 'Ẩn bài đăng' : 'Hiển thị bài đăng' }}">
-                    {{ listing.status === 'VISIBLE' ? '🔒 Ẩn' : '👁️ Hiện' }}
-                </button>
-                <a class="action-btn secondary" [routerLink]="['/host/listings', listing.id, 'edit']">
-                    ✏️ Sửa
-                </a>
-                <button class="action-btn danger" (click)="deletePost(listing.id)">
-                    🗑️ Xóa
-                </button>
+                <div class="listing-info">
+                    <span class="info-item" *ngIf="listing.roomPrice">
+                        💰 {{ listing.roomPrice | number:'1.0-0' }} đ/tháng
+                    </span>
+                    <span class="info-item" *ngIf="listing.roomArea">
+                        📐 {{ listing.roomArea }} m²
+                    </span>
+                    <span class="info-item">
+                        📅 {{ listing.createdAt | date:'dd/MM/yyyy' }}
+                    </span>
+                </div>
+
+                <!-- Actions -->
+                <div class="listing-actions">
+                    <button class="action-btn primary" (click)="toggleStatus(listing.id, listing.status || 'VISIBLE')"
+                        title="{{ listing.status === 'VISIBLE' ? 'Ẩn bài đăng' : 'Hiển thị bài đăng' }}">
+                        {{ listing.status === 'VISIBLE' ? '🔒 Ẩn' : '👁️ Hiện' }}
+                    </button>
+                    <a class="action-btn secondary" [routerLink]="['/host/listings', listing.id, 'edit']">
+                        ✏️ Sửa
+                    </a>
+                    <button class="action-btn danger" (click)="deletePost(listing.id)">
+                        🗑️ Xóa
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -52,7 +82,7 @@
     <ng-template #emptyState>
         <div class="empty">
             <div class="empty-icon">📢</div>
-            <div class="empty-title">Chưa có bài đăng nào</div>
+            <div class="empty-title">{{ selectedHostelId ? 'Trọ này chưa có bài đăng' : 'Chưa có bài đăng nào' }}</div>
             <div class="empty-sub">Hãy tạo bài đăng để quảng cáo phòng trọ của bạn</div>
             <a routerLink="/host/listings/create" class="btn success" style="margin-top: 20px;">
                 ✨ Đăng bài ngay

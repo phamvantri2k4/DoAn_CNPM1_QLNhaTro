@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HostelService } from '../../services/hostel.service';
 import { Hostel } from '../../models/hostel.model';
+import { DialogService } from '../../components/dialog/dialog.service';
 
 @Component({
   selector: 'app-host-hostel-list',
@@ -16,7 +17,7 @@ export class HostHostelListComponent {
   message = '';
   isLoading = false;
 
-  constructor(private hostelService: HostelService, private cdr: ChangeDetectorRef) {}
+  constructor(private hostelService: HostelService, private cdr: ChangeDetectorRef, private dialog: DialogService) {}
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -37,23 +38,27 @@ export class HostHostelListComponent {
   deleteHostel(hostel: Hostel): void {
     const hostelId = hostel.id ?? hostel.hostelId;
     if (!hostelId) {
-      this.message = 'Không thể xóa: ID trọ không hợp lệ';
+      this.dialog.error('Không thể xóa: ID trọ không hợp lệ');
       return;
     }
 
-    if (!confirm(`Bạn có chắc muốn xóa trọ "${hostel.name}"? Hành động này không thể hoàn tác.`)) {
-      return;
-    }
-
-    this.hostelService.delete(hostelId).subscribe({
-      next: () => {
-        this.message = 'Đã xóa trọ thành công';
-        this.hostels = this.hostels.filter(h => (h.id ?? h.hostelId) !== hostelId);
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.message = `Lỗi khi xóa: ${err.error?.message || 'Không xóa được'}`;
-        this.cdr.detectChanges();
+    this.dialog.confirm(`Bạn có chắc muốn xóa trọ "${hostel.name}"?`, {
+      title: 'Xác nhận xóa trọ',
+      confirmText: 'Xóa',
+      cancelText: 'Hủy',
+      onConfirm: () => {
+        this.hostelService.delete(hostelId).subscribe({
+          next: () => {
+            this.hostels = this.hostels.filter(h => (h.id ?? h.hostelId) !== hostelId);
+            this.cdr.detectChanges();
+            this.dialog.success('Đã xóa trọ thành công');
+          },
+          error: (err) => {
+            const errorMsg = err.error?.message || 'Không xóa được trọ';
+            this.dialog.error(errorMsg);
+            this.cdr.detectChanges();
+          }
+        });
       }
     });
   }

@@ -6,6 +6,8 @@ import { ListingService } from '../../services/listing.service';
 import { HostelService } from '../../services/hostel.service';
 import { Listing } from '../../models/listing.model';
 import { Hostel } from '../../models/hostel.model';
+import { AuthService } from '../../services/auth.service';
+import { DialogService } from '../../components/dialog/dialog.service';
 
 @Component({
   selector: 'app-host-listing-list',
@@ -24,7 +26,9 @@ export class HostListingListComponent {
 
   constructor(
     private listingService: ListingService,
-    private hostelService: HostelService
+    private hostelService: HostelService,
+    private auth: AuthService,
+    private dialog: DialogService
   ) {}
 
   ngOnInit(): void {
@@ -33,12 +37,18 @@ export class HostListingListComponent {
   }
 
   loadHostels(): void {
-    this.hostelService.getAll().subscribe({
+    const ownerId = this.auth.getCurrentUserId();
+    if (!ownerId) {
+      this.hostels = [];
+      return;
+    }
+
+    this.hostelService.getAll(ownerId).subscribe({
       next: (data: Hostel[]) => {
-        this.hostels = data;
+        this.hostels = data || [];
       },
       error: () => {
-        // Silently fail hostel loading
+        this.hostels = [];
       }
     });
   }
@@ -46,41 +56,60 @@ export class HostListingListComponent {
   loadListings(): void {
     this.listingService.getMine().subscribe({
       next: (data: Listing[]) => {
-        this.listings = data;
+        this.listings = data || [];
         this.applyFilter();
       },
       error: () => {
         this.message = 'Không tải được danh sách bài đăng';
+        this.listings = [];
+        this.filteredListings = [];
       }
     });
   }
 
   onHostelFilterChange(): void {
+    console.log('Filter changed, selectedHostelId:', this.selectedHostelId);
     this.applyFilter();
   }
 
   applyFilter(): void {
     if (this.selectedHostelId) {
-      // Filter by hostel - need to check roomId belongs to hostel
+      // Convert to number for safe comparison
+      const targetHostelId = Number(this.selectedHostelId);
       this.filteredListings = this.listings.filter(l => {
-        // Simple filter for now
-        return true; // TODO: implement proper filtering
+        const listingHostelId = l.hostelId ? Number(l.hostelId) : null;
+        return listingHostelId === targetHostelId;
       });
+      console.log('Filtered to hostel', targetHostelId, ':', this.filteredListings.length, 'results');
     } else {
       this.filteredListings = [...this.listings];
+      console.log('Showing all listings:', this.filteredListings.length);
     }
   }
 
+  getFirstImage(listing: Listing): string | null {
+    return this.listingService.getFirstImage(listing);
+  }
+
+  getImageCount(listing: Listing): number {
+    return listing.images?.length || 0;
+  }
+
   deletePost(id: number): void {
-    if (!confirm('Bạn có chắc muốn xóa bài đăng này?')) return;
-    
-    this.listingService.delete(id).subscribe({
-      next: () => {
-        this.message = 'Đã xóa bài đăng';
-        this.loadListings();
-      },
-      error: () => {
-        this.message = 'Xóa thất bại';
+    this.dialog.confirm('Bạn có chắc muốn xóa bài đăng này?', {
+      title: 'Xác nhận xóa',
+      confirmText: 'Xóa',
+      cancelText: 'Hủy',
+      onConfirm: () => {
+        this.listingService.delete(id).subscribe({
+          next: () => {
+            this.loadListings();
+            this.dialog.success('Đã xóa bài đăng');
+          },
+          error: () => {
+            this.dialog.error('Xóa thất bại');
+          }
+        });
       }
     });
   }
@@ -91,9 +120,11 @@ export class HostListingListComponent {
       next: () => {
         this.message = `Đã ${newStatus === 'VISIBLE' ? 'hiển thị' : 'ẩn'} bài đăng`;
         this.loadListings();
+        setTimeout(() => this.message = '', 3000);
       },
       error: () => {
         this.message = 'Cập nhật trạng thái thất bại';
+        setTimeout(() => this.message = '', 3000);
       }
     });
   }

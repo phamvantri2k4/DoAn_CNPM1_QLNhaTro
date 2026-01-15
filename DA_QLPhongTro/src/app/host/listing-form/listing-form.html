@@ -2,7 +2,8 @@
     <div class="form-card">
         <div class="form-header">
             <h2 class="form-title">{{ isEdit ? '✏️ Cập nhật bài đăng' : '📢 Đăng bài cho thuê' }}</h2>
-            <p class="form-subtitle">{{ isEdit ? 'Chỉnh sửa thông tin bài đăng' : 'Tạo bài đăng mới để quảng cáo phòng trọ của bạn' }}</p>
+            <p class="form-subtitle">{{ isEdit ? 'Chỉnh sửa thông tin bài đăng' : 'Tạo bài đăng mới để quảng cáo phòng
+                trọ của bạn' }}</p>
         </div>
 
         <form (ngSubmit)="submit()" class="form-body">
@@ -12,7 +13,8 @@
                     <span class="label-required">*</span>
                 </label>
                 <div style="display:flex; gap: 10px; align-items: center;">
-                    <select [(ngModel)]="selectedHostelId" name="hostelId" required class="form-select" (change)="onHostelChange()" style="flex: 1;">
+                    <select [(ngModel)]="selectedHostelId" name="hostelId" required class="form-select"
+                        (change)="onHostelChange()" style="flex: 1;">
                         <option [ngValue]="null">-- Chọn trọ --</option>
                         <option *ngFor="let h of hostels" [ngValue]="(h.id ?? h.hostelId)">{{ h.name }}</option>
                     </select>
@@ -28,11 +30,14 @@
                 </label>
                 <select [(ngModel)]="form.roomId" name="roomId" required class="form-select">
                     <option [ngValue]="null">-- Chọn phòng để đăng bài --</option>
-                    <option *ngFor="let room of rooms" [ngValue]="(room.id ?? room.roomId)">
-                        {{ room.title }}
+                    <option *ngFor="let room of rooms" [ngValue]="(room.id ?? room.roomId)"
+                        [disabled]="hasPost(room.id ?? room.roomId) && !isEdit"
+                        [ngClass]="{'disabled-room': hasPost(room.id ?? room.roomId) && !isEdit}">
+                        {{ getRoomOptionText(room) }}
                     </option>
                 </select>
-                <p class="form-hint">Chọn phòng mà bạn muốn đăng bài cho thuê</p>
+                <p class="form-hint">Chọn phòng mà bạn muốn đăng bài cho thuê. <span *ngIf="!isEdit">Phòng đã có bài
+                        đăng sẽ bị làm mờ.</span></p>
             </div>
 
             <div class="form-group">
@@ -58,13 +63,26 @@
                 <label class="form-label">
                     <span class="label-text">🖼️ Ảnh bài đăng</span>
                 </label>
-                <input type="file" accept="image/*" multiple (change)="onFilesSelected($event)" class="form-input" />
-                <p class="form-hint">Chọn 1 hoặc nhiều ảnh (ảnh sẽ gắn vào phòng để hiển thị trên trang chủ)</p>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="file" accept="image/*" multiple (change)="onFilesSelected($event)" class="form-input"
+                        style="flex: 1;" />
+                    <button type="button" class="btn btn-secondary" (click)="clearAllImages()" *ngIf="images.length"
+                        style="white-space: nowrap;">🗑️ Xóa hết</button>
+                </div>
+                <p class="form-hint">Chọn 1 hoặc nhiều ảnh. <strong>Ảnh đầu tiên</strong> sẽ hiển thị làm ảnh chính trên
+                    trang danh sách.</p>
 
                 <div class="image-grid" *ngIf="images.length">
                     <div class="image-item" *ngFor="let img of images; let i = index">
                         <img [src]="getPreviewUrl(img)" alt="preview" class="preview" />
-                        <button type="button" class="remove" (click)="removeImage(i)">✕</button>
+                        <span class="primary-badge" *ngIf="i === 0">⭐ Ảnh chính</span>
+                        <div class="image-controls">
+                            <button type="button" class="move-btn" (click)="moveImageUp(i)" [disabled]="i === 0"
+                                title="Chuyển lên">↑</button>
+                            <button type="button" class="move-btn" (click)="moveImageDown(i)"
+                                [disabled]="i === images.length - 1" title="Chuyển xuống">↓</button>
+                            <button type="button" class="remove" (click)="removeImage(i)" title="Xóa">✕</button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -135,7 +135,7 @@ public class PostsController : ControllerBase
 
     [HttpGet("mine")]
     [Authorize(Roles = "owner,admin")]
-    public async Task<ActionResult<IEnumerable<Post>>> GetMyPosts()
+    public async Task<ActionResult<IEnumerable<object>>> GetMyPosts()
     {
         var query = _db.Posts.AsNoTracking();
 
@@ -153,11 +153,30 @@ public class PostsController : ControllerBase
             query = query.Where(p => ownerRoomIds.Contains(p.RoomId));
         }
 
+        // Trả về dữ liệu đầy đủ bao gồm tên phòng và tên trọ
         var data = await query
             .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new
+            {
+                p.Id,
+                p.RoomId,
+                p.Title,
+                p.Description,
+                p.CreatedAt,
+                p.Status,
+                p.ImagesJson,
+                // Thông tin phòng
+                RoomTitle = p.Room != null ? p.Room.Title : null,
+                RoomPrice = p.Room != null ? (decimal?)p.Room.Price : null,
+                RoomArea = p.Room != null ? (double?)p.Room.Area : null,
+                // Thông tin trọ
+                HostelId = p.Room != null && p.Room.Hostel != null ? p.Room.Hostel.Id : (int?)null,
+                HostelName = p.Room != null && p.Room.Hostel != null ? p.Room.Hostel.Name : null,
+                HostelAddress = p.Room != null && p.Room.Hostel != null ? p.Room.Hostel.Address : null
+            })
             .ToListAsync();
 
-        return Ok(data ?? new List<Post>());
+        return Ok(data);
     }
 
     // Endpoint nhẹ cho trang home: chỉ trả về field cơ bản + ảnh đầu tiên
@@ -273,6 +292,14 @@ public class PostsController : ControllerBase
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
             if (!int.TryParse(userIdClaim, out var ownerUserId)) return Unauthorized();
             if (room.OwnerId != ownerUserId) return Forbid();
+        }
+
+        // Kiểm tra phòng đã có bài đăng chưa - mỗi phòng chỉ được đăng 1 bài
+        var existingPost = await _db.Posts.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.RoomId == body.RoomId);
+        if (existingPost != null)
+        {
+            return BadRequest(new { message = "Phòng này đã có bài đăng rồi. Mỗi phòng chỉ được đăng 1 bài." });
         }
 
         var post = new Post

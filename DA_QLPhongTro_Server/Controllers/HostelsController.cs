@@ -175,7 +175,56 @@ public class HostelsController : ControllerBase
         if (!int.TryParse(userIdClaim, out var ownerId)) return Unauthorized();
         if (hostel.OwnerId != ownerId) return Forbid();
 
+        // Kiểm tra xem có phòng nào đang được thuê không (Status = "Đang thuê")
+        var hasActiveRentals = await _db.RentalInfos
+            .AsNoTracking()
+            .AnyAsync(ri => ri.Room != null && ri.Room.HostelId == id && ri.Status == "Đang thuê");
+
+        if (hasActiveRentals)
+        {
+            return BadRequest(new { message = "Không thể xóa trọ vì có phòng đang được thuê. Vui lòng chờ người thuê trả phòng trước." });
+        }
+
+        // Kiểm tra xem có yêu cầu thuê đang chờ không
+        var hasPendingRequests = await _db.RentalRequests
+            .AsNoTracking()
+            .AnyAsync(rr => rr.Room != null && rr.Room.HostelId == id && rr.Status == "PENDING");
+
+        if (hasPendingRequests)
+        {
+            return BadRequest(new { message = "Không thể xóa trọ vì có yêu cầu thuê phòng đang chờ xử lý. Vui lòng xử lý hết yêu cầu trước." });
+        }
+
+        // Lấy danh sách phòng của trọ
+        var rooms = await _db.Rooms.Where(r => r.HostelId == id).ToListAsync();
+        var roomIds = rooms.Select(r => r.Id).ToList();
+
+        // Xóa tất cả bài đăng của các phòng
+        var posts = await _db.Posts.Where(p => roomIds.Contains(p.RoomId)).ToListAsync();
+        _db.Posts.RemoveRange(posts);
+
+        // Xóa tất cả yêu cầu thuê (REJECTED, CANCELLED) của các phòng
+        var rentalRequests = await _db.RentalRequests
+            .Where(rr => roomIds.Contains(rr.RoomId) && rr.Status != "PENDING")
+            .ToListAsync();
+        _db.RentalRequests.RemoveRange(rentalRequests);
+
+        // Xóa tất cả thông tin thuê cũ (đã trả phòng) của các phòng
+        var oldRentalInfos = await _db.RentalInfos
+            .Where(ri => roomIds.Contains(ri.RoomId) && ri.Status != "Đang thuê")
+            .ToListAsync();
+        _db.RentalInfos.RemoveRange(oldRentalInfos);
+
+        // Xóa tất cả đánh giá của các phòng
+        var reviews = await _db.Reviews.Where(rv => roomIds.Contains(rv.RoomId)).ToListAsync();
+        _db.Reviews.RemoveRange(reviews);
+
+        // Xóa tất cả phòng
+        _db.Rooms.RemoveRange(rooms);
+
+        // Xóa trọ
         _db.Hostels.Remove(hostel);
+
         await _db.SaveChangesAsync();
         return NoContent();
     }

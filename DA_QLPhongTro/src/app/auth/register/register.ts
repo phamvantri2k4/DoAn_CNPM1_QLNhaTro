@@ -14,6 +14,7 @@ import { RegisterPayload } from '../../models/auth.model';
 })
 export class RegisterComponent {
   form: RegisterPayload = {
+    username: '',
     fullName: '',
     email: '',
     phone: '',

@@ -44,6 +44,15 @@
               placeholder="Nhập họ và tên đầy đủ" required />
           </div>
 
+          <div class="form-group">
+            <label for="username">
+              <span class="material-symbols-outlined">account_circle</span>
+              <span>Tên đăng nhập</span>
+            </label>
+            <input id="username" [(ngModel)]="form.username" name="username" type="text"
+              placeholder="Chỉ chữ thường, số và dấu gạch dưới" required />
+          </div>
+
           <div class="form-row">
             <div class="form-group">
               <label for="email">

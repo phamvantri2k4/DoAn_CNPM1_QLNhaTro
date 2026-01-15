@@ -10,6 +10,7 @@ import { RoomService } from '../../services/room.service';
 import { Hostel } from '../../models/hostel.model';
 import { HostelService } from '../../services/hostel.service';
 import { AuthService } from '../../services/auth.service';
+import { DialogService } from '../../components/dialog/dialog.service';
 
 @Component({
   selector: 'app-host-listing-form',
@@ -32,6 +33,7 @@ export class HostListingFormComponent {
   isLoading = false;
   images: string[] = [];
   isReadingImages = false;
+  roomsWithPosts: Set<number> = new Set(); // Danh sách roomId đã có bài đăng
 
   constructor(
     private route: ActivatedRoute,
@@ -40,10 +42,12 @@ export class HostListingFormComponent {
     private http: HttpService,
     private roomService: RoomService,
     private hostelService: HostelService,
-    private auth: AuthService
+    private auth: AuthService,
+    private dialog: DialogService
   ) {}
 
   ngOnInit(): void {
+    this.loadRoomsWithPosts(); // Load danh sách phòng đã có bài đăng
     this.reloadHostels();
 
     // Nếu có roomId trong query params, tự động chọn phòng đó
@@ -136,6 +140,31 @@ export class HostListingFormComponent {
     });
   }
 
+  // Load danh sách phòng đã có bài đăng của owner
+  loadRoomsWithPosts(): void {
+    this.listingService.getMine().subscribe({
+      next: (posts) => {
+        this.roomsWithPosts = new Set(posts.map(p => p.roomId).filter(id => id != null));
+      },
+      error: () => {
+        this.roomsWithPosts = new Set();
+      }
+    });
+  }
+
+  // Kiểm tra phòng đã có bài đăng chưa
+  hasPost(roomId: number | undefined): boolean {
+    if (!roomId) return false;
+    return this.roomsWithPosts.has(roomId);
+  }
+
+  // Lấy text hiển thị cho option phòng
+  getRoomOptionText(room: Room): string {
+    const roomId = room.id ?? room.roomId;
+    const hasPost = this.hasPost(roomId);
+    return hasPost ? `${room.title} (đã có bài đăng)` : room.title;
+  }
+
   submit(): void {
     if (!this.form.roomId) {
       this.message = 'Vui lòng chọn phòng để đăng bài';
@@ -188,9 +217,8 @@ export class HostListingFormComponent {
     const files = input.files ? Array.from(input.files) : [];
     if (!files.length) return;
 
-    // Upload ảnh lên server -> nhận URL -> lưu vào DB (không dùng base64)
-    this.images = [];
-    this.form.imagesJson = undefined;
+    // Upload ảnh lên server -> nhận URL -> THÊM vào danh sách hiện tại
+    // Không xóa ảnh cũ, cho phép upload nhiều lần
     this.isReadingImages = true;
     let pending = files.length;
 
@@ -215,11 +243,42 @@ export class HostListingFormComponent {
         }
       });
     });
+
+    // Reset input để có thể chọn lại cùng file
+    input.value = '';
   }
 
   removeImage(index: number): void {
     this.images = this.images.filter((_, i) => i !== index);
     this.form.imagesJson = this.images.length ? JSON.stringify(this.images) : undefined;
+  }
+
+  clearAllImages(): void {
+    this.dialog.confirm('Bạn có chắc muốn xóa tất cả ảnh?', {
+      title: 'Xóa tất cả ảnh',
+      confirmText: 'Xóa',
+      cancelText: 'Hủy',
+      onConfirm: () => {
+        this.images = [];
+        this.form.imagesJson = undefined;
+      }
+    });
+  }
+
+  moveImageUp(index: number): void {
+    if (index <= 0) return;
+    const temp = this.images[index];
+    this.images[index] = this.images[index - 1];
+    this.images[index - 1] = temp;
+    this.form.imagesJson = JSON.stringify(this.images);
+  }
+
+  moveImageDown(index: number): void {
+    if (index >= this.images.length - 1) return;
+    const temp = this.images[index];
+    this.images[index] = this.images[index + 1];
+    this.images[index + 1] = temp;
+    this.form.imagesJson = JSON.stringify(this.images);
   }
 
   getPreviewUrl(url: string): string {

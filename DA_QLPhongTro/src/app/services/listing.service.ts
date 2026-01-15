@@ -109,7 +109,14 @@ export class ListingService {
       ownerPhone: get('ownerPhone', 'OwnerPhone') as string | undefined,
       ownerEmail: get('ownerEmail', 'OwnerEmail') as string | undefined,
       images,
-      imagesJson: imagesJson ?? undefined
+      imagesJson: imagesJson ?? undefined,
+      // Room and hostel info for management pages
+      roomTitle: get('roomTitle', 'RoomTitle') as string | undefined,
+      roomPrice: get('roomPrice', 'RoomPrice') ? Number(get('roomPrice', 'RoomPrice')) : undefined,
+      roomArea: get('roomArea', 'RoomArea') ? Number(get('roomArea', 'RoomArea')) : undefined,
+      hostelId: get('hostelId', 'HostelId') ? Number(get('hostelId', 'HostelId')) : undefined,
+      hostelName: get('hostelName', 'HostelName') as string | undefined,
+      hostelAddress: get('hostelAddress', 'HostelAddress') as string | undefined
     };
   }
 
